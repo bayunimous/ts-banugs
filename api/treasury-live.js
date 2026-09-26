@@ -1,9 +1,5 @@
 const axios = require('axios');
 
-// Cache memori serverless untuk histori perubahan harga USD
-let globalUsdHistory = [];
-let lastRecordedPrice = null;
-
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -15,9 +11,9 @@ module.exports = async (req, res) => {
     let isPromoActive = false;
     let promoDiscount = 29999;
     let limitBulanIni = 5;
-    let liveUsdIdr = 17901.9753; // Default Fallback
+    let liveUsdIdr = 17901.9753;
 
-    // 1. Ambil Data Emas Treasury Live
+    // 1. Ambil Data Emas Treasury
     try {
         const response = await axios.get('https://indonesia-gold-api.vercel.app/api/treasury', {
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
@@ -57,31 +53,6 @@ module.exports = async (req, res) => {
     const currentTimeStr = `${hours}:${minutes}:${seconds}`;
 
     const formattedUsdPrice = liveUsdIdr.toLocaleString('id-ID', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
-
-    // HANYA CATAT LOG BARU JIKA HARGA BENAR-BENAR BERGERAK NAIK/TURUN!
-    if (lastRecordedPrice === null) {
-        lastRecordedPrice = liveUsdIdr;
-        globalUsdHistory.unshift({
-            price: formattedUsdPrice,
-            time: currentTimeStr,
-            status: "up",
-            raw: liveUsdIdr
-        });
-    } else if (liveUsdIdr !== lastRecordedPrice) {
-        const status = liveUsdIdr > lastRecordedPrice ? "up" : "down";
-        lastRecordedPrice = liveUsdIdr;
-        
-        globalUsdHistory.unshift({
-            price: formattedUsdPrice,
-            time: currentTimeStr,
-            status: status,
-            raw: liveUsdIdr
-        });
-
-        if (globalUsdHistory.length > 15) {
-            globalUsdHistory.pop();
-        }
-    }
 
     // Matriks Rumus Cuan Kovdez
     function calcKovdezCuan(tierKey, buy, sell) {
@@ -143,6 +114,10 @@ module.exports = async (req, res) => {
         promo_price: "2.565.001",
         limit_bulan: limitBulanIni,
         history: history,
-        usd_idr_history: globalUsdHistory
+        current_usd: {
+            price: formattedUsdPrice,
+            time: currentTimeStr,
+            raw: liveUsdIdr
+        }
     });
 };
