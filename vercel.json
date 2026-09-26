@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/treasury-live", "destination": "/api/treasury-live.js" }
+  ]
+}

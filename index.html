@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harga Emas Treasury - Live Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #181a1b;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+        }
+        .text-green-kovdez { color: #00E124; }
+        .bg-green-kovdez { background-color: #23B14D; }
+        .bg-red-kovdez { background-color: #E01A1A; }
+        @keyframes promoBlink {
+            0% { opacity: 1; transform: scale(1.02); }
+            100% { opacity: 0.6; transform: scale(0.98); }
+        }
+        .blink-on {
+            animation: promoBlink 0.6s infinite alternate;
+        }
+    </style>
+</head>
+<body class="p-4 max-w-[1400px] mx-auto">
+
+    <!-- Header Atas -->
+    <header class="flex flex-wrap items-center justify-between border-b border-gray-800 pb-2 mb-2">
+        <div class="flex items-center gap-2">
+            <h1 class="text-xl font-bold flex items-center gap-1 text-gray-100">
+                🧈 Treasury ➺
+            </h1>
+            <div class="flex items-center gap-1.5 ml-2">
+                <span class="w-7 h-7 rounded-full bg-[#29b6f6] text-white flex items-center justify-center text-xs font-bold">➢</span>
+                <span class="w-7 h-7 rounded-full bg-[#25D366] text-white flex items-center justify-center text-xs font-bold">💬</span>
+                <span class="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold">🎁</span>
+            </div>
+            <span id="headerAnomali" class="text-xs font-bold text-red-500 ml-2">⚠️ (-Rp 29.999)</span>
+        </div>
+
+        <button class="w-9 h-9 rounded-full bg-amber-400 text-gray-900 flex items-center justify-center text-lg font-bold">
+            ☀️
+        </button>
+    </header>
+
+    <!-- Jam, Status Promo ON/OFF & Ref Price -->
+    <div class="flex items-center gap-3 mb-3 flex-wrap">
+        <div id="jam" class="text-2xl font-bold text-amber-400 font-mono">
+            Loading Jam...
+        </div>
+
+        <div class="flex items-center gap-1">
+            <span id="promoBadge" class="bg-green-kovdez text-white text-xs px-2 py-0.5 rounded font-bold uppercase transition-all">
+                OFF
+            </span>
+            <span class="text-red-500 font-bold text-lg font-mono flex items-center gap-1">
+                📌 <span id="refPrice">2.565.001</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Tabel Monitoring Transaksi (Maksimal 5 Baris Tampil) -->
+    <div class="overflow-x-auto mb-2 border border-gray-800 rounded bg-[#23272b]">
+        <table class="w-full text-left border-collapse text-xs">
+            <thead>
+                <tr class="border-b border-gray-700 text-amber-400 font-bold bg-[#1e2124]">
+                    <th class="p-2 w-20 text-center">Waktu</th>
+                    <th class="p-2 min-w-[220px]">Data Transaksi</th>
+                    <th class="p-2">Est.cuan 10JT ➺ gr</th>
+                    <th class="p-2">Est.jual Modal gr</th>
+                    <th class="p-2">XAU</th>
+                    <th class="p-2">USD</th>
+                    <th class="p-2">Anomali</th>
+                    <th class="p-2">Spread</th>
+                </tr>
+            </thead>
+            <tbody id="tabelBody" class="divide-y divide-gray-800 font-semibold">
+                <tr>
+                    <td colspan="8" class="text-center py-6 text-gray-500">Mengekstrak data transaksi live...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginasi & Limit Bulan Ini Badge (Maksimal 5 Baris Per Halaman) -->
+    <div class="flex flex-wrap justify-between items-center text-xs font-bold mb-6 gap-2">
+        <div class="flex items-center gap-1.5">
+            <button id="btnPrev" onclick="changePage(-1)" class="bg-gray-800 text-gray-400 px-2.5 py-1 rounded hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed">
+                Kembali
+            </button>
+            <span id="pageNumbers" class="flex items-center gap-1 text-gray-400">
+                <span class="bg-amber-400 text-gray-900 px-2.5 py-1 rounded font-bold">1</span>
+            </span>
+            <button id="btnNext" onclick="changePage(1)" class="bg-gray-800 text-gray-400 px-2.5 py-1 rounded hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed">
+                Lanjut
+            </button>
+            <span id="pageInfo" class="text-gray-500 ml-2">Halaman 1 dari 1</span>
+        </div>
+
+        <div class="flex items-center gap-1.5 ml-auto">
+            <span class="text-green-kovdez text-sm">Limit Bulan ini:</span>
+            <span id="limitBulan" class="bg-green-kovdez text-gray-900 px-2.5 py-0.5 rounded text-sm font-mono font-bold">
+                5
+            </span>
+        </div>
+    </div>
+
+    <!-- Grid Chart TradingView & Kalkulator Emas -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 my-6">
+        <div class="lg:col-span-2 border border-gray-800 rounded p-3 bg-[#23272b]">
+            <h3 class="text-sm font-bold text-gray-200 mb-2">📈 Chart XAU/USD TradingView</h3>
+            <div id="tradingview_chart" class="h-[350px]"></div>
+        </div>
+
+        <div class="border border-gray-800 rounded p-3 bg-[#23272b]">
+            <h3 class="text-sm font-bold text-gray-200 mb-2">🧮 Kalkulator Emas</h3>
+            <div class="bg-[#181a1b] p-3 rounded mb-3 border border-gray-800">
+                <div class="text-xs text-gray-400 mb-1">Hitung Beli (Harga: <span id="calcBuyRate" class="text-green-kovdez font-bold">Rp 2.521.823</span>)</div>
+                <input type="number" id="calcBuyIdr" placeholder="Rupiah (IDR)" class="w-full bg-[#23272b] border border-gray-700 p-2 text-xs rounded text-white mb-2" oninput="calcBuy()">
+                <div class="text-xs text-gray-300">Hasil: <span id="calcBuyRes" class="text-amber-400 font-bold">0</span> gr</div>
+            </div>
+            <div class="bg-[#181a1b] p-3 rounded border border-gray-800">
+                <div class="text-xs text-gray-400 mb-1">Hitung Jual (Harga: <span id="calcSellRate" class="text-red-500 font-bold">Rp 2.436.368</span>)</div>
+                <input type="number" id="calcSellGram" placeholder="Jumlah Gram" class="w-full bg-[#23272b] border border-gray-700 p-2 text-xs rounded text-white mb-2" oninput="calcSell()">
+                <div class="text-xs text-gray-300">Hasil: <span id="calcSellRes" class="text-green-kovdez font-bold">Rp 0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TradingView Script -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+        new TradingView.widget({
+            "autosize": true,
+            "symbol": "FOREXCOM:XAUUSD",
+            "interval": "15",
+            "timezone": "Asia/Jakarta",
+            "theme": "dark",
+            "style": "1",
+            "locale": "id",
+            "container_id": "tradingview_chart"
+        });
+    </script>
+
+    <script>
+        // State Paginasi & Harga Acuan Kalkulator
+        let currentPage = 1;
+        const rowsPerPage = 5;
+        let allHistoryData = [];
+        let activeBuyRate = 2521823;
+        let activeSellRate = 2436368;
+
+        function updateJam() {
+            const now = new Date();
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const dayName = days[now.getDay()];
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('jam').innerText = `${dayName}, ${hours}.${minutes}.${seconds} WIB`;
+        }
+        setInterval(updateJam, 1000);
+        updateJam();
+
+        async function fetchLiveData() {
+            try {
+                const response = await fetch('/api/treasury-live');
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.promo) {
+                        const promoBadge = document.getElementById('promoBadge');
+                        const isON = result.promo.status === "ON";
+                        
+                        promoBadge.innerText = result.promo.status;
+                        promoBadge.className = isON 
+                            ? "bg-red-kovdez text-white text-xs px-2 py-0.5 rounded font-bold uppercase blink-on" 
+                            : "bg-green-kovdez text-white text-xs px-2 py-0.5 rounded font-bold uppercase";
+                            
+                        document.getElementById('headerAnomali').innerText = `⚠️ ${result.promo.priceDiffText}`;
+                        document.getElementById('limitBulan').innerText = result.promo.limitBulanIni;
+                        
+                        if (result.promo.refPrice) {
+                            document.getElementById('refPrice').innerText = result.promo.refPrice;
+                        }
+                    }
+
+                    if (result.history && result.history.length > 0) {
+                        allHistoryData = result.history;
+                        
+                        // Parse harga aktif untuk kalkulator
+                        const latest = result.history[0];
+                        const parsedBuy = parseInt(String(latest.beli).replace(/\D/g, ''), 10);
+                        const parsedSell = parseInt(String(latest.jual).replace(/\D/g, ''), 10);
+                        
+                        if (parsedBuy > 0) activeBuyRate = parsedBuy;
+                        if (parsedSell > 0) activeSellRate = parsedSell;
+
+                        document.getElementById('calcBuyRate').innerText = `Rp ${activeBuyRate.toLocaleString('id-ID')}`;
+                        document.getElementById('calcSellRate').innerText = `Rp ${activeSellRate.toLocaleString('id-ID')}`;
+
+                        renderTableWithPagination();
+                    }
+                }
+            } catch (err) {}
+        }
+
+        function renderTableWithPagination() {
+            const totalPages = Math.ceil(allHistoryData.length / rowsPerPage) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            const paginatedData = allHistoryData.slice(startIndex, endIndex);
+
+            const tbody = document.getElementById('tabelBody');
+            tbody.innerHTML = '';
+
+            paginatedData.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                const isFirstRowOverall = (startIndex + index) === 0;
+                const textColorClass = isFirstRowOverall ? 'text-green-kovdez' : 'text-gray-300';
+
+                tr.className = `hover:bg-white/5 ${textColorClass}`;
+                tr.innerHTML = `
+                    <td class="p-2 text-center font-mono text-red-500 font-bold">${item.waktu}</td>
+                    <td class="p-2 font-mono">
+                        <span class="${textColorClass}">Beli: ${item.beli} Jual: ${item.jual}</span>
+                        <span class="${item.statusColor} text-xs ml-1">${item.statusText}</span>
+                    </td>
+                    <td class="p-2 font-mono ${textColorClass}">${item.estCuanGr}</td>
+                    <td class="p-2 font-mono ${textColorClass}">${item.estJualModalGr}</td>
+                    <td class="p-2 font-mono ${textColorClass}">${item.xau}</td>
+                    <td class="p-2 text-green-kovdez font-mono">${item.usd}</td>
+                    <td class="p-2 text-amber-400 font-mono">⚠️ ${item.anomali}</td>
+                    <td class="p-2 text-red-500 font-mono">${item.spread}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('pageInfo').innerText = `Halaman ${currentPage} dari ${totalPages}`;
+            document.getElementById('btnPrev').disabled = currentPage === 1;
+            document.getElementById('btnNext').disabled = currentPage === totalPages;
+
+            const pageNumbersEl = document.getElementById('pageNumbers');
+            pageNumbersEl.innerHTML = '';
+            
+            for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+                const numSpan = document.createElement('span');
+                numSpan.className = i === currentPage 
+                    ? "bg-amber-400 text-gray-900 px-2.5 py-1 rounded font-bold cursor-pointer" 
+                    : "text-gray-400 px-2 py-1 cursor-pointer hover:text-white";
+                numSpan.innerText = i;
+                numSpan.onclick = () => { currentPage = i; renderTableWithPagination(); };
+                pageNumbersEl.appendChild(numSpan);
+            }
+            if (totalPages > 5) {
+                const dotSpan = document.createElement('span');
+                dotSpan.className = "text-gray-500 px-1";
+                dotSpan.innerText = `... ${totalPages}`;
+                pageNumbersEl.appendChild(dotSpan);
+            }
+        }
+
+        function changePage(direction) {
+            currentPage += direction;
+            renderTableWithPagination();
+        }
+
+        // Kalkulator Dinamis mengikuti Harga Aktif
+        function calcBuy() {
+            const idr = parseFloat(document.getElementById('calcBuyIdr').value) || 0;
+            const gram = idr / activeBuyRate;
+            document.getElementById('calcBuyRes').innerText = gram.toFixed(4);
+        }
+
+        function calcSell() {
+            const gram = parseFloat(document.getElementById('calcSellGram').value) || 0;
+            const res = Math.floor(gram * activeSellRate);
+            document.getElementById('calcSellRes').innerText = `Rp ${res.toLocaleString('id-ID')}`;
+        }
+
+        setInterval(fetchLiveData, 3000);
+        fetchLiveData();
+    </script>
+</body>
+</html>
