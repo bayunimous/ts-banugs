@@ -7,56 +7,95 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
 <style>
 *{box-sizing:border-box}
-body{font-family:Arial,sans-serif;margin:0;padding:5px 20px 0 20px;background:#181a1b!important;color:#e0e0e0!important}
-h2{margin:0 0 2px}
-h3{margin:15px 0 10px}
-.header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:2px}
-.title-wrap{display:flex;align-items:center;gap:10px}
-.tele-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:#29b6f6;color:#fff;border-radius:50%;text-decoration:none;font-weight:bold}
-.wa-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:#25D366;color:#fff;border-radius:50%;text-decoration:none;font-weight:bold}
-.jam-social-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap}
-#jam{font-size:2em;color:#ffb300!important;font-weight:bold}
-.promo-badge{display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:normal;font-size:16px;padding:3px 7px;border-radius:2px;height:24px}
+body{
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin:0;
+    padding:10px 24px 0 24px;
+    background:#181a1b!important;
+    color:#e0e0e0!important;
+    -webkit-font-smoothing: antialiased;
+}
+h2{margin:0 0 2px; font-size: 1.4em;}
+h3{margin:10px 0; font-size: 1.1em;}
+
+.header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.title-wrap{display:flex;align-items:center;gap:12px}
+.tele-icon, .wa-icon {display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;color:#fff;border-radius:50%;text-decoration:none;font-weight:bold;font-size:14px;}
+.tele-icon{background:#29b6f6;}
+.wa-icon{background:#25D366;}
+
+.jam-social-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+#jam{font-size:2.2em;color:#ffb300!important;font-weight:bold;font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
+.promo-badge{display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:15px;padding:4px 10px;border-radius:4px;height:28px;}
 .promo-badge.on{background:#E01A1A;}
 .promo-badge.off{background:#23B14D;}
-.promo-box{color:#ff5252!important;font-weight:bold;font-size:1.3em;white-space:nowrap;margin-left:2px}
-.promo-btn{padding:4px 8px;border:2px solid #00E124;background:linear-gradient(135deg,#00E124,#00ff41);color:#181a1b;border-radius:20px;font-size:1em;cursor:pointer;font-weight:bold}
-.theme-toggle-btn{padding:0;border:none;border-radius:50%;background:#ffb300;color:#222;cursor:pointer;font-size:1.5em;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+.promo-box{color:#ff5252!important;font-weight:bold;font-size:1.4em;white-space:nowrap;margin-left:4px;font-family: monospace;}
+.promo-btn{padding:4px 10px;border:2px solid #00E124;background:linear-gradient(135deg,#00E124,#00ff41);color:#181a1b;border-radius:20px;font-size:1em;cursor:pointer;font-weight:bold}
+.theme-toggle-btn{padding:0;border:none;border-radius:50%;background:#ffb300;color:#222;cursor:pointer;font-size:1.5em;width:42px;height:42px;display:flex;align-items:center;justify-content:center}
 
-/* DataTable Kovdez Styling */
+/* DataTable Kovdez Styling & Font Diperbesar */
 table.dataTable{width:100%!important;border-collapse:collapse;background:#23272b!important;color:#e0e0e0!important}
-table.dataTable thead th{font-weight:bold;white-space:nowrap;padding:10px 8px;font-size:1em;border-bottom:2px solid #444!important;color:#ffb300!important;background:#23272b!important}
-table.dataTable tbody td{padding:8px 6px;white-space:nowrap;border-bottom:1px solid #333!important;font-size:1em;background:#23272b;color:#e0e0e0!important;font-weight:bold}
-th.waktu,td.waktu{width:78px;min-width:72px;max-width:82px;text-align:center;padding-left:2px!important;padding-right:2px!important}
-th.transaksi,td.transaksi{text-align:left;min-width:220px}
+table.dataTable thead th{
+    font-weight:bold;
+    white-space:nowrap;
+    padding:12px 10px!important;
+    font-size:14px!important;
+    border-bottom:2px solid #444!important;
+    color:#ffb300!important;
+    background:#23272b!important;
+}
+table.dataTable tbody td{
+    padding:10px 10px!important;
+    white-space:nowrap;
+    border-bottom:1px solid #333!important;
+    font-size:14px!important;
+    background:#23272b;
+    color:#e0e0e0!important;
+    font-weight:600!important;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+th.waktu,td.waktu{width:85px;min-width:80px;text-align:center;font-weight:bold!important;}
+th.transaksi,td.transaksi{text-align:left;min-width:240px}
 
-#tabel tbody tr:first-child td{color:#00E124!important;font-weight:bold}
+/* Baris Pertama Warna Neon Green Kovdez */
+#tabel tbody tr:first-child td{color:#00E124!important;font-weight:bold!important}
 
-.container-flex{display:flex;gap:15px;flex-wrap:wrap;margin-top:10px}
-.card{border:1px solid #444;border-radius:6px;padding:10px;background:#23272b}
-.card-usd{width:270px;height:370px;overflow-y:auto}
-.card-chart{flex:1;min-width:380px;height:370px;overflow:hidden}
+.container-flex{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
+.card{border:1px solid #444;border-radius:6px;padding:14px;background:#23272b}
+.card-usd{width:300px;height:390px;overflow-y:auto}
+.card-chart{flex:1;min-width:380px;height:390px;overflow:hidden}
 
-/* USD/IDR List Styling */
-#priceList{list-style:none;padding:0;margin:0;max-height:275px;overflow-y:auto}
-#priceList li{margin-bottom:6px;font-family:monospace;font-size:0.95em;color:#e0e0e0;display:flex;justify-content:space-between;align-items:center;border-b:1px solid #333;padding-bottom:3px}
-.time{color:gray;font-size:.85em}
-#currentPrice{color:#00E124;font-weight:bold;font-size:1.15em}
-.usd-decimal{font-size:0.8em;opacity:0.85}
+/* USD/IDR List Kovdez Diperbesar */
+#priceList{list-style:none;padding:0;margin:0;max-height:280px;overflow-y:auto}
+#priceList li{
+    margin-bottom:8px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size:14px;
+    color:#e0e0e0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px dashed #3a3f44;
+    padding-bottom:5px;
+    font-weight: 600;
+}
+.time{color:#888;font-size:12px;margin-left:6px;font-weight:normal;}
+#currentPrice{color:#00E124;font-weight:bold;font-size:1.3em;font-family:monospace;}
+.usd-decimal{font-size:0.85em;opacity:0.85}
 
 .dt-top-controls{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:0!important;padding:8px 0}
 .dataTables_wrapper .dataTables_length label, .dataTables_wrapper .dataTables_filter label{display:inline-flex;align-items:center;margin-bottom:0;font-size:13px!important;color:#aaa!important}
-.dataTables_wrapper .dataTables_length select{font-size:12px!important;padding:0 14px 0 4px!important;height:24px!important;border-radius:4px;margin:0 4px!important;background:#181a1b;color:#e0e0e0;border:1px solid #444}
-.dataTables_wrapper .dataTables_filter input{background:#181a1b;color:#e0e0e0;border:1px solid #444;border-radius:4px;padding:2px 6px;margin-left:4px;width:100px}
+.dataTables_wrapper .dataTables_length select{font-size:13px!important;padding:2px 8px!important;height:28px!important;border-radius:4px;margin:0 4px!important;background:#181a1b;color:#e0e0e0;border:1px solid #444}
+.dataTables_wrapper .dataTables_filter input{background:#181a1b;color:#e0e0e0;border:1px solid #444;border-radius:4px;padding:3px 8px;margin-left:4px;width:110px;font-size:13px;}
 .dataTables_wrapper .dataTables_info{display:none!important}
-.dataTables_wrapper .dataTables_paginate{margin-top:8px!important;text-align:center!important}
-.dataTables_wrapper .dataTables_paginate .paginate_button{padding:4px 10px!important;font-size:13px!important;color:#aaa!important;cursor:pointer}
+.dataTables_wrapper .dataTables_paginate{margin-top:10px!important;text-align:center!important}
+.dataTables_wrapper .dataTables_paginate .paginate_button{padding:5px 12px!important;font-size:13px!important;color:#aaa!important;cursor:pointer}
 .dataTables_wrapper .dataTables_paginate .paginate_button.current{background:#ffb300!important;color:#181a1b!important;font-weight:bold;border-radius:4px}
 
-.profit-order-btns{display:flex;gap:3px;align-items:center;margin-right:6px}
-.profit-btn{padding:5px 10px;border:1px solid #555;background:#333;color:#ccc;border-radius:4px;font-size:12px;cursor:pointer;font-weight:bold;transition:all .2s}
+.profit-order-btns{display:flex;gap:4px;align-items:center;margin-right:8px}
+.profit-btn{padding:5px 12px;border:1px solid #555;background:#333;color:#ccc;border-radius:4px;font-size:13px;cursor:pointer;font-weight:bold;transition:all .2s}
 .profit-btn.active{background:#ffb300;color:#222;border-color:#ffb300}
-.tv-source-select{padding:3px 6px;font-size:0.9em;border:1px solid #444;border-radius:4px;background:#23272b;color:#00E124;cursor:pointer;font-weight:bold;outline:none}
+.tv-source-select{padding:4px 8px;font-size:13px;border:1px solid #444;border-radius:4px;background:#23272b;color:#00E124;cursor:pointer;font-weight:bold;outline:none}
 .spread-num{font-size:1.1em;padding:2px 8px;background:#00E124;color:#181a1b;border-radius:4px;margin-left:4px;font-weight:bold}
 .limit-num{font-size:1.1em;padding:2px 8px;background:#00E124;color:#181a1b;border-radius:4px;margin-left:4px;font-weight:bold}
 .text-green-kovdez{color:#00E124!important}
@@ -71,7 +110,7 @@ th.transaksi,td.transaksi{text-align:left;min-width:220px}
 <a href="#" class="tele-icon">➢</a>
 <a href="#" class="wa-icon">💬</a>
 <button class="promo-btn">🎁</button>
-<span id="anomaliDisplay" class="text-red-kovdez" style="font-weight:bold; font-size:0.85em;">⚠️ (-Rp 29.999)</span>
+<span id="anomaliDisplay" class="text-red-kovdez" style="font-weight:bold; font-size:0.9em;">⚠️ (-Rp 29.999)</span>
 </div>
 <button class="theme-toggle-btn">☀️</button>
 </div>
@@ -111,20 +150,21 @@ th.transaksi,td.transaksi{text-align:left;min-width:220px}
 <option value="OANDA">OANDA</option>
 <option value="BYBIT:XAUTUSDT">XAUT-Bybit</option>
 </select>
-<span style="color:#00E124; font-weight:bold;">Spread:<span class="spread-num" id="spreadValue">-3.39%</span></span>
+<span style="color:#00E124; font-weight:bold; font-size: 14px;">Spread:<span class="spread-num" id="spreadValue">-3.39%</span></span>
 </div>
-<div style="color:#00E124; font-weight:bold;">
+<div style="color:#00E124; font-weight:bold; font-size: 14px;">
 Limit Bulan ini:<span class="limit-num" id="limitBulan">5</span>
 </div>
 </div>
-<div id="tradingview_chart" style="height:310px;"></div>
+<div id="tradingview_chart" style="height:320px;"></div>
 </div>
 
 <div class="card card-usd">
 <h3 style="margin-top:0">Harga USD/IDR Google Finance</h3>
-<p>Harga saat ini: <span id="currentPrice">Memuat data...</span></p>
-<h4>Harga Terakhir:</h4>
-<ul id="priceList"><li>Menunggu data...</li></ul>
+<p style="font-size:14px; font-weight:bold; color:#aaa; margin-bottom: 6px;">Harga saat ini:</p>
+<div id="currentPrice" style="margin-bottom:12px;">Memuat data...</div>
+<h4 style="font-size:13px; color:#aaa; margin:10px 0 6px 0;">HARGA TERAKHIR:</h4>
+<ul id="priceList"><li>Menunggu perubahan harga...</li></ul>
 </div>
 </div>
 
@@ -138,7 +178,6 @@ var tableMode = 'detail';
 var pokokMap = { jt10: 9669000, jt30: 29004000, jt40: 38672000, jt50: 48340000, jt60: 58005000 };
 var headerLabels = {'jt10':'Est.cuan 10JT ➺ gr','jt30':'Est.cuan 30JT ➺ gr','jt40':'Est.cuan 40JT ➺ gr','jt50':'Est.cuan 50JT ➺ gr','jt60':'Est.cuan 60JT ➺ gr'};
 var latestHistory = [];
-var clientUsdLog = [];
 
 function swapNumFormat(s){
     if(!s)return s;
@@ -241,21 +280,12 @@ function updateUsd(h){
     var c=document.getElementById("currentPrice"),p=document.getElementById("priceList");
     if(!h||!h.length)return;
 
-    // Gabungkan log realtime terbaru ke memori frontend
-    h.forEach(function(item){
-        var exists = clientUsdLog.some(function(x){ return x.time === item.time; });
-        if(!exists){
-            clientUsdLog.unshift(item);
-        }
-    });
-    if(clientUsdLog.length > 15) clientUsdLog = clientUsdLog.slice(0, 15);
-
-    var top = clientUsdLog[0];
+    var top = h[0];
     c.innerHTML = swapNumFormat(top.price) + " 🚀";
     
     var html = '';
-    for(var i = 0; i < clientUsdLog.length; i++){
-        var item = clientUsdLog[i];
+    for(var i = 0; i < h.length; i++){
+        var item = h[i];
         var icon = (item.status === 'down') ? '🔴' : '🟢';
         html += '<li><span>' + swapNumFormat(item.price) + ' <span class="time">(' + item.time + ')</span></span> ' + icon + '</li>';
     }
@@ -266,7 +296,7 @@ function createTradingViewWidget() {
     var src = $('#tvSource').val() || 'FOREXCOM';
     var sym = src.indexOf(':') !== -1 ? src : src + ':XAUUSD';
     new TradingView.widget({
-        width: "100%", height: 310, symbol: sym, interval: "15",
+        width: "100%", height: 320, symbol: sym, interval: "15",
         timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "id",
         container_id: "tradingview_chart"
     });

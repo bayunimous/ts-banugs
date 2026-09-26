@@ -1,7 +1,8 @@
 const axios = require('axios');
 
-// Cache histori USD/IDR lokal di memori serverless
+// Cache memori serverless untuk histori perubahan harga USD
 let globalUsdHistory = [];
+let lastRecordedPrice = null;
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,7 +15,7 @@ module.exports = async (req, res) => {
     let isPromoActive = false;
     let promoDiscount = 29999;
     let limitBulanIni = 5;
-    let liveUsdIdr = 16250.0; // Fallback nilai dasar jika API sibuk
+    let liveUsdIdr = 17901.9753; // Default Fallback
 
     // 1. Ambil Data Emas Treasury Live
     try {
@@ -33,7 +34,7 @@ module.exports = async (req, res) => {
         }
     } catch (err) {}
 
-    // 2. Ambil Kurs USD/IDR Realtime dari API Finansial Publik
+    // 2. Ambil Kurs USD/IDR Realtime
     try {
         const usdRes = await axios.get('https://open.er-api.com/v6/latest/USD', { timeout: 3000 });
         if (usdRes.data && usdRes.data.rates && usdRes.data.rates.IDR) {
@@ -55,30 +56,30 @@ module.exports = async (req, res) => {
     const seconds = String(wibTime.getUTCSeconds()).padStart(2, '0');
     const currentTimeStr = `${hours}:${minutes}:${seconds}`;
 
-    // Format tampilan USD/IDR titik/koma (e.g. 16.250,5000)
     const formattedUsdPrice = liveUsdIdr.toLocaleString('id-ID', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
 
-    // Perbarui log histori USD/IDR jika ada perubahan harga/waktu
-    if (!globalUsdHistory.length || globalUsdHistory[0].time !== currentTimeStr) {
-        let status = "up";
-        if (globalUsdHistory.length > 0) {
-            const prevPriceRaw = parseFloat(globalUsdHistory[0].price.replace(/\./g, '').replace(',', '.'));
-            if (liveUsdIdr < prevPriceRaw) {
-                status = "down";
-            }
-        }
-
-        // Hindari duplikat waktu persis
-        if (!globalUsdHistory.length || globalUsdHistory[0].time !== currentTimeStr) {
-            globalUsdHistory.unshift({
-                price: formattedUsdPrice,
-                time: currentTimeStr,
-                status: status
-            });
-        }
+    // HANYA CATAT LOG BARU JIKA HARGA BENAR-BENAR BERGERAK NAIK/TURUN!
+    if (lastRecordedPrice === null) {
+        lastRecordedPrice = liveUsdIdr;
+        globalUsdHistory.unshift({
+            price: formattedUsdPrice,
+            time: currentTimeStr,
+            status: "up",
+            raw: liveUsdIdr
+        });
+    } else if (liveUsdIdr !== lastRecordedPrice) {
+        const status = liveUsdIdr > lastRecordedPrice ? "up" : "down";
+        lastRecordedPrice = liveUsdIdr;
         
-        if (globalUsdHistory.length > 12) {
-            globalUsdHistory = globalUsdHistory.slice(0, 12);
+        globalUsdHistory.unshift({
+            price: formattedUsdPrice,
+            time: currentTimeStr,
+            status: status,
+            raw: liveUsdIdr
+        });
+
+        if (globalUsdHistory.length > 15) {
+            globalUsdHistory.pop();
         }
     }
 
