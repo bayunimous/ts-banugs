@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harga Emas Treasury - Realtime Dashboard</title>
+    <title>Harga Emas Treasury - Kovdez Interactive Match</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; margin: 0; padding: 12px; background: #181a1b; color: #e0e0e0; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 10px 16px; background: #181a1b; color: #e0e0e0; }
         
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+        /* Header & Icons */
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
         .title-wrap { display: flex; align-items: center; gap: 8px; }
         .tele-icon, .wa-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: #fff; text-decoration: none; font-weight: bold; font-size: 13px; }
         .tele-icon { background: #0088cc; } .wa-icon { background: #25D366; }
@@ -23,18 +24,18 @@
         @keyframes promoBlink { 0% { opacity: 1; } 100% { opacity: 0.6; } }
         .promo-box { color: #ff5252; font-weight: bold; font-size: 1.2em; margin-left: 6px; }
 
-        /* Datatable Styling */
+        /* DataTables Custom Styling */
         .tbl-wrap { width: 100%; overflow-x: auto; margin-bottom: 15px; }
         table.dataTable { width: 100%!important; border-collapse: collapse; background: #23272b!important; color: #e0e0e0!important; margin-top: 0!important; }
-        table.dataTable thead th { color: #ffb300!important; border-bottom: 2px solid #444!important; padding: 10px 8px; font-size: 13px; text-align: left; white-space: nowrap; }
-        table.dataTable tbody td { border-bottom: 1px solid #333!important; padding: 8px; font-size: 13px; font-weight: bold; white-space: nowrap; }
+        table.dataTable thead th { color: #ffb300!important; border-bottom: 2px solid #444!important; padding: 8px; font-size: 13px; text-align: left; white-space: nowrap; }
+        table.dataTable tbody td { border-bottom: 1px solid #333!important; padding: 7px 8px; font-size: 13px; font-weight: bold; white-space: nowrap; }
         
         .dt-top-controls { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; flex-wrap: wrap; gap: 8px; }
         .dataTables_length label, .dataTables_filter label { color: #aaa!important; font-size: 13px; display: inline-flex; align-items: center; }
         .dataTables_length select { background: #1e2124; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 2px 4px; margin: 0 4px; }
         .dataTables_filter input { background: #1e2124; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 3px 6px; margin-left: 4px; width: 110px; }
-        .dataTables_paginate { text-align: center; margin-top: 10px; }
-        .dataTables_paginate .paginate_button { color: #aaa!important; padding: 4px 10px!important; font-size: 13px!important; cursor: pointer; }
+        .dataTables_paginate { text-align: center; margin-top: 8px; }
+        .dataTables_paginate .paginate_button { color: #aaa!important; padding: 3px 8px!important; font-size: 12px!important; cursor: pointer; }
         .dataTables_paginate .paginate_button.current { background: #ffb300!important; color: #181a1b!important; border-radius: 4px; font-weight: bold; }
         .dataTables_info { display: none!important; }
 
@@ -45,11 +46,15 @@
         .text-green-kovdez { color: #00E124!important; }
         .text-red-kovdez { color: #ff1744!important; }
         
-        /* Grid Layout Bottom */
-        .container-flex { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        /* Grid Layout Bottom & USD Panel Interaktif */
+        .container-flex { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
         .card { border: 1px solid #444; border-radius: 6px; padding: 12px; background: #23272b; }
         .card-chart { flex: 2; min-width: 320px; height: 380px; }
-        .card-usd { flex: 1; min-width: 240px; height: 380px; overflow-y: auto; }
+        .card-usd { flex: 1; min-width: 250px; height: 380px; overflow-y: auto; background: #23272b; }
+        
+        .usd-decimal { font-size: 0.8em; opacity: 0.85; }
+        .usd-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-bottom: 1px border-gray-800; font-family: monospace; font-size: 0.9em; transition: background 0.2s; }
+        .usd-item:hover { background: rgba(255, 255, 255, 0.05); }
         .tv-source-select { background: #181a1b; color: #00E124; border: 1px solid #444; border-radius: 4px; font-weight: bold; padding: 2px 4px; }
         .spread-num { background: #ff1744; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
         .limit-num { background: #00E124; color: #181a1b; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
@@ -97,7 +102,7 @@
         </table>
     </div>
 
-    <!-- Grid Chart TradingView & Google Finance USD -->
+    <!-- Grid Chart TradingView & Google Finance USD Panel -->
     <div class="container-flex">
         <div class="card card-chart">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
@@ -117,14 +122,19 @@
             <div id="tradingview_chart" style="height:310px;"></div>
         </div>
 
+        <!-- Panel Harga USD/IDR Google Finance Interaktif & Rapi -->
         <div class="card card-usd">
-            <h3 style="margin-top:0; font-size:1em;">Harga USD/IDR Google Finance</h3>
-            <p style="font-size:0.9em;">Harga saat ini: <span id="currentPrice" class="text-green-kovdez" style="font-weight:bold;">17.914,1000 🚀</span></p>
-            <h4 style="margin:10px 0 5px; font-size:0.9em;">Harga Terakhir:</h4>
-            <ul id="priceList" style="list-style:none; padding:0; margin:0; font-size:0.85em; font-family:monospace;">
-                <li>17.914,1000 <span style="color:gray;">(10:35:58)</span> 🟢</li>
-                <li>17.912,3513 <span style="color:gray;">(10:33:35)</span> 🔴</li>
-            </ul>
+            <h3 style="margin-top:0; font-size:0.95em; border-b border-gray-700 pb-2;">Harga USD/IDR Google Finance</h3>
+            <div style="background: #181a1b; padding: 8px 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #333;">
+                <span style="font-size:0.8em; color:#aaa;">Harga saat ini:</span>
+                <div id="currentPrice" class="text-green-kovdez" style="font-weight:bold; font-size:1.1em; margin-top:2px;">
+                    17.914<span class="usd-decimal">,1000</span> 🚀
+                </div>
+            </div>
+            <h4 style="margin:6px 0; font-size:0.85em; color:#aaa;">Harga Terakhir:</h4>
+            <div id="priceListContainer" style="display:flex; flex-direction:column; gap:4px;">
+                <!-- Dikelola via JS Dynamic -->
+            </div>
         </div>
     </div>
 
@@ -232,6 +242,35 @@
             table.clear().rows.add(arr).draw(false);
         }
 
+        function formatUsdFormat(strPrice) {
+            var parts = strPrice.split(',');
+            if (parts.length > 1) {
+                return parts[0] + '<span class="usd-decimal">,' + parts[1] + '</span>';
+            }
+            return strPrice;
+        }
+
+        function renderUsdPanel(usdList) {
+            if (!usdList || !usdList.length) return;
+            
+            // Current Price Top
+            var top = usdList[0];
+            $('#currentPrice').html(formatUsdFormat(top.price) + ' 🚀');
+
+            // Render Log History Below
+            var html = '';
+            usdList.forEach(function(item) {
+                var icon = item.status === 'up' ? '🟢' : (item.status === 'down' ? '🔴' : '➖');
+                html += `
+                    <div class="usd-item">
+                        <span style="color:#e0e0e0; font-weight:bold;">${formatUsdFormat(item.price)}</span>
+                        <span style="color:#888; font-size:0.8em;">(${item.time}) ${icon}</span>
+                    </div>
+                `;
+            });
+            $('#priceListContainer').html(html);
+        }
+
         function createTradingViewWidget() {
             var src = $('#tvSource').val() || 'FOREXCOM';
             var sym = src.indexOf(':') !== -1 ? src : src + ':XAUUSD';
@@ -257,6 +296,10 @@
                     if (d.history && d.history.length) {
                         latestHistory = d.history;
                         renderTable();
+                    }
+
+                    if (d.usd_idr_history) {
+                        renderUsdPanel(d.usd_idr_history);
                     }
                 }
             } catch (e) {}

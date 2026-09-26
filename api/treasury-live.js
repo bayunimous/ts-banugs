@@ -31,31 +31,23 @@ module.exports = async (req, res) => {
     const now = new Date();
     const wibTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
 
-    // Matriks Pokok Modal Diskon Asli Kovdez (Berdasarkan index.html Kovdez)
-    const pokokMap = {
-        jt10: 9669000,
-        jt30: 29004000,
-        jt40: 38672000,
-        jt50: 48340000,
-        jt60: 58005000
-    };
-
-    // LOGIKA PERHITUNGAN CUAN PERSIS KOVDEZ
-    function getKovdezProfitString(pokok, buy, sell) {
-        // 1. Gram Modal (Berdasarkan Harga Jual)
-        var modalGrRaw = Math.floor((pokok / sell) * 10000) / 10000;
+    // Rumus Matematika Asli Kovdez (Berdasarkan Source Code index.html Kovdez)
+    // 10JT -> Pokok Rp 9.669.000
+    // 30JT -> Pokok Rp 29.004.000
+    // 40JT -> Pokok Rp 38.672.000
+    // 50JT -> Pokok Rp 48.340.000
+    // 60JT -> Pokok Rp 58.005.000
+    function calcKovdezValue(pokok) {
+        var gramBuy = Math.floor((pokok / buyPrice) * 10000) / 10000;
+        var gramSell = Math.floor((pokok / sellPrice) * 10000) / 10000;
+        var diffRupiah = Math.round((gramBuy - gramSell) * sellPrice);
         
-        // 2. Gram Est Beli (Berdasarkan Harga Beli)
-        var buyGrRaw = Math.floor((pokok / buy) * 10000) / 10000;
-        var gramStr = parseFloat(buyGrRaw.toFixed(4)).toString().replace('.', ',') + 'gr';
+        var sign = diffRupiah > 0 ? '+' : '';
+        var formattedRupiah = sign + diffRupiah.toLocaleString('id-ID');
+        var formattedGram = parseFloat(gramBuy.toFixed(4)).toString().replace('.', ',') + 'gr';
+        var icon = diffRupiah >= 0 ? '🟢' : '🔴';
 
-        // 3. Nominal Selisih Cuan Rupiah Kovdez
-        var nominalDiff = Math.round((buyGrRaw - modalGrRaw) * sell);
-        var sign = nominalDiff > 0 ? '+' : '';
-        var formattedNominal = sign + nominalDiff.toLocaleString('id-ID');
-        var icon = nominalDiff >= 0 ? '🟢' : '🔴';
-
-        return `${formattedNominal} ${icon} ${gramStr}`;
+        return `${formattedRupiah} ${icon} ${formattedGram}`;
     }
 
     const history = [];
@@ -73,24 +65,23 @@ module.exports = async (req, res) => {
             buying_rate_raw: buyPrice,
             selling_rate_raw: sellPrice,
             diff_display: " — tetap",
-            jt10: getKovdezProfitString(pokokMap.jt10, buyPrice, sellPrice),
-            jt30: getKovdezProfitString(pokokMap.jt30, buyPrice, sellPrice),
-            jt40: getKovdezProfitString(pokokMap.jt40, buyPrice, sellPrice),
-            jt50: getKovdezProfitString(pokokMap.jt50, buyPrice, sellPrice),
-            jt60: getKovdezProfitString(pokokMap.jt60, buyPrice, sellPrice),
+            jt10: calcKovdezValue(9669000),
+            jt30: calcKovdezValue(29004000),
+            jt40: calcKovdezValue(38672000),
+            jt50: calcKovdezValue(48340000),
+            jt60: calcKovdezValue(58005000),
             usd_price_buy: 137.8385,
-            usdidr: 17914,
-            isAnomaly: true,
-            anomaliDiff: -29999
+            usdidr: 17914
         });
     }
 
     const usdHistory = [
-        { price: "17.914,1000", time: "10:35:58" },
-        { price: "17.912,3513", time: "10:33:35" },
-        { price: "17.914,1000", time: "10:32:41" },
-        { price: "17.912,3513", time: "10:31:55" },
-        { price: "17.914,1000", time: "10:30:48" }
+        { price: "17.914,1000", time: "10:35:58", status: "up" },
+        { price: "17.912,3513", time: "10:33:35", status: "down" },
+        { price: "17.914,1000", time: "10:32:41", status: "up" },
+        { price: "17.912,3513", time: "10:31:55", status: "down" },
+        { price: "17.914,1000", time: "10:30:48", status: "up" },
+        { price: "17.912,3513", time: "10:29:45", status: "down" }
     ];
 
     return res.status(200).json({
