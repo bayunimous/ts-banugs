@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
     let isPromoActive = false;
     let promoDiscount = 29999;
     let limitBulanIni = 5;
-    let liveUsdIdr = 17914.1000; // Standar default acuan Kovdez
+    let liveUsdIdr = 16250.0; // Fail-safe awal jika seluruh API pasar finansial timeout
 
     // 1. Fetch Data Emas Treasury Live
     try {
@@ -28,14 +28,13 @@ module.exports = async (req, res) => {
             promoDiscount = data.promo_discount || 29999;
             limitBulanIni = data.limit_bulan_ini || 5;
 
-            // Jika API Treasury menyediakan rate USD/IDR
             if (data.usdidr || data.usd_idr) {
                 liveUsdIdr = parseFloat(data.usdidr || data.usd_idr);
             }
         }
     } catch (err) {}
 
-    // 2. Fetch Live Forex USD/IDR Rate dari Yahoo Finance / Currency API
+    // 2. Fetch Kurs USD/IDR Murni Realtime dari Pasar Finansial (Yahoo Finance & OpenExchange)
     try {
         const yfRes = await axios.get('https://query1.finance.yahoo.com/v8/finance/chart/USDIDR=X?interval=1m', {
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
@@ -62,7 +61,7 @@ module.exports = async (req, res) => {
     const seconds = String(wibTime.getUTCSeconds()).padStart(2, '0');
     const currentTimeStr = `${hours}:${minutes}:${seconds}`;
 
-    // Rumus Kovdez Presisi
+    // Rumus Presisi Cuan Kovdez
     function calcKovdezCuan(tierKey, buy, sell) {
         const exactMap = {
             jt10: { val: -8070, tx: 10000000 },

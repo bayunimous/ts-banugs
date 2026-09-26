@@ -181,8 +181,8 @@ var pokokMap = { jt10: 9669000, jt30: 29004000, jt40: 38672000, jt50: 48340000, 
 var headerLabels = {'jt10':'Est.cuan 10JT ➺ gr','jt30':'Est.cuan 30JT ➺ gr','jt40':'Est.cuan 40JT ➺ gr','jt50':'Est.cuan 50JT ➺ gr','jt60':'Est.cuan 60JT ➺ gr'};
 var latestHistory = [];
 
-// Array memori histori USD lokal di browser
-var usdClientLog = JSON.parse(localStorage.getItem('kovdez_usd_history_v2') || '[]');
+// Memori lokal browser untuk menyimpan histori harga riil
+var usdRealLog = JSON.parse(localStorage.getItem('kovdez_usd_real_log') || '[]');
 
 function formatUsdDisplay(priceStr) {
     if(!priceStr) return '';
@@ -281,68 +281,66 @@ function renderTable() {
     table.clear().rows.add(arr).draw(false);
 }
 
-// PENANGANAN LOGIKA OTOMATIS KOVDEZ: HANYA TAMBAH ROW JIKA HARGA BERUBAH NAIK/TURUN
-function handleUsdRealtime(usdData) {
+// LOGIKA MURNI EVENT-DRIVEN HARGA RIIL PASAR
+function processLiveMarketData(usdData) {
     if (!usdData || !usdData.price || !usdData.raw) return;
 
     var priceFormatted = usdData.price;
     var rawVal = usdData.raw;
     var timeStr = usdData.time;
 
-    // 1. Inisialisasi perdana jika log masih kosong
-    if (usdClientLog.length === 0) {
-        usdClientLog.unshift({
+    // 1. Jika memori belum ada histori, masukkan data awal
+    if (usdRealLog.length === 0) {
+        usdRealLog.unshift({
             price: priceFormatted,
             time: timeStr,
             status: 'up',
             raw: rawVal
         });
-        localStorage.setItem('kovdez_usd_history_v2', JSON.stringify(usdClientLog));
+        localStorage.setItem('kovdez_usd_real_log', JSON.stringify(usdRealLog));
         renderUsdUI();
         return;
     }
 
-    var latestStored = usdClientLog[0];
+    var latestStored = usdRealLog[0];
 
-    // 2. HANYA TAMBAH BARIS BARU JIKA HARGA BENAR-BENAR BERGERAK NAIK ATAU TURUN!
+    // 2. HANYA BERTAMBAH JIKA PASAR PERGANTIAN ANGKAS DARI BACKEND
     if (rawVal !== latestStored.raw) {
         var status = (rawVal > latestStored.raw) ? 'up' : 'down';
 
-        usdClientLog.unshift({
+        usdRealLog.unshift({
             price: priceFormatted,
             time: timeStr,
             status: status,
             raw: rawVal
         });
 
-        // Simpan maksimal 12 baris histori terakhir
-        if (usdClientLog.length > 12) {
-            usdClientLog.pop();
+        if (usdRealLog.length > 15) {
+            usdRealLog.pop();
         }
 
-        localStorage.setItem('kovdez_usd_history_v2', JSON.stringify(usdClientLog));
+        localStorage.setItem('kovdez_usd_real_log', JSON.stringify(usdRealLog));
         renderUsdUI();
     } else {
-        // Jika harga sama, cukup pastikan tampilan "Harga saat ini" tetap aktif
         renderUsdCurrentOnly();
     }
 }
 
 function renderUsdCurrentOnly() {
-    if (usdClientLog.length === 0) return;
-    var top = usdClientLog[0];
+    if (usdRealLog.length === 0) return;
+    var top = usdRealLog[0];
     var currentIcon = (top.status === 'down') ? '🔻' : '🚀';
     document.getElementById("currentPriceVal").innerHTML = 
         `<span style="color:#00E124; font-weight:bold; font-size:1.4em; font-family:monospace;">${formatUsdDisplay(top.price)}</span> <span style="font-size:1em;">${currentIcon}</span>`;
 }
 
 function renderUsdUI() {
-    if (usdClientLog.length === 0) return;
+    if (usdRealLog.length === 0) return;
 
     renderUsdCurrentOnly();
 
     var html = '';
-    usdClientLog.forEach(function(item) {
+    usdRealLog.forEach(function(item) {
         var icon = (item.status === 'down') ? '🔴' : '🟢';
         html += `
             <div class="usd-item-row">
@@ -385,16 +383,13 @@ async function fetchLiveData() {
             }
 
             if (d.google_finance_usd) {
-                handleUsdRealtime(d.google_finance_usd);
+                processLiveMarketData(d.google_finance_usd);
             }
         }
     } catch (e) {}
 }
 
-// Inisialisasi awal UI dari memori
 renderUsdUI();
-
-// Polling data live setiap 3 detik
 setInterval(fetchLiveData, 3000); fetchLiveData();
 </script>
 </body>
