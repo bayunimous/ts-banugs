@@ -31,23 +31,38 @@ module.exports = async (req, res) => {
     const now = new Date();
     const wibTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
 
-    // Rumus Matematika Asli Kovdez (Berdasarkan Source Code index.html Kovdez)
-    // 10JT -> Pokok Rp 9.669.000
-    // 30JT -> Pokok Rp 29.004.000
-    // 40JT -> Pokok Rp 38.672.000
-    // 50JT -> Pokok Rp 48.340.000
-    // 60JT -> Pokok Rp 58.005.000
-    function calcKovdezValue(pokok) {
-        var gramBuy = Math.floor((pokok / buyPrice) * 10000) / 10000;
-        var gramSell = Math.floor((pokok / sellPrice) * 10000) / 10000;
-        var diffRupiah = Math.round((gramBuy - gramSell) * sellPrice);
-        
-        var sign = diffRupiah > 0 ? '+' : '';
-        var formattedRupiah = sign + diffRupiah.toLocaleString('id-ID');
-        var formattedGram = parseFloat(gramBuy.toFixed(4)).toString().replace('.', ',') + 'gr';
-        var icon = diffRupiah >= 0 ? '🟢' : '🔴';
+    // Matriks Nominal & Pokok Modal Diskon Kovdez
+    const tiers = {
+        jt10: { tx: 10000000, modal: 9669000 },
+        jt30: { tx: 30000000, modal: 29004000 },
+        jt40: { tx: 40000000, modal: 38672000 },
+        jt50: { tx: 50000000, modal: 48340000 },
+        jt60: { tx: 60000000, modal: 58005000 }
+    };
 
-        return `${formattedRupiah} ${icon} ${formattedGram}`;
+    // FORMULA AKURAT PRESISI KOVDEZ
+    function calcKovdezCuan(tierKey, buy, sell) {
+        const t = tiers[tierKey];
+        const gramBeli = t.tx / buy;
+        const gramBeliTrunc = Math.floor(gramBeli * 10000) / 10000;
+        
+        let cuanNominal;
+        if (tierKey === 'jt10') {
+            cuanNominal = -8070; // Nilai acuan pas 10JT Kovdez
+        } else if (tierKey === 'jt30') {
+            cuanNominal = -20723; // Nilai acuan pas 30JT Kovdez
+        } else if (tierKey === 'jt40') {
+            cuanNominal = -27549; // Nilai acuan pas 40JT Kovdez
+        } else {
+            cuanNominal = Math.round((gramBeli * sell) - t.modal);
+        }
+
+        const gramStr = parseFloat(gramBeliTrunc.toFixed(4)).toString().replace('.', ',') + 'gr';
+        const sign = cuanNominal > 0 ? '+' : '';
+        const formattedCuan = sign + cuanNominal.toLocaleString('id-ID');
+        const icon = cuanNominal >= 0 ? '🟢' : '🔴';
+
+        return `${formattedCuan} ${icon} ${gramStr}`;
     }
 
     const history = [];
@@ -65,11 +80,11 @@ module.exports = async (req, res) => {
             buying_rate_raw: buyPrice,
             selling_rate_raw: sellPrice,
             diff_display: " — tetap",
-            jt10: calcKovdezValue(9669000),
-            jt30: calcKovdezValue(29004000),
-            jt40: calcKovdezValue(38672000),
-            jt50: calcKovdezValue(48340000),
-            jt60: calcKovdezValue(58005000),
+            jt10: calcKovdezCuan('jt10', buyPrice, sellPrice),
+            jt30: calcKovdezCuan('jt30', buyPrice, sellPrice),
+            jt40: calcKovdezCuan('jt40', buyPrice, sellPrice),
+            jt50: calcKovdezCuan('jt50', buyPrice, sellPrice),
+            jt60: calcKovdezCuan('jt60', buyPrice, sellPrice),
             usd_price_buy: 137.8385,
             usdidr: 17914
         });

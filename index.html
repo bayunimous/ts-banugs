@@ -3,61 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harga Emas Treasury - Kovdez Interactive Match</title>
+    <title>Harga Emas Treasury - Realtime Monitor</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; margin: 0; padding: 10px 16px; background: #181a1b; color: #e0e0e0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            padding: 12px 20px; 
+            background: #121314; 
+            color: #e0e0e0; 
+            -webkit-font-smoothing: antialiased;
+        }
         
-        /* Header & Icons */
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+        /* Navigation & Top Bar */
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
         .title-wrap { display: flex; align-items: center; gap: 8px; }
         .tele-icon, .wa-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: #fff; text-decoration: none; font-weight: bold; font-size: 13px; }
         .tele-icon { background: #0088cc; } .wa-icon { background: #25D366; }
-        .promo-btn { padding: 3px 8px; border: none; background: #ff1744; color: #fff; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .promo-btn { padding: 3px 9px; border: none; background: #ff1744; color: #fff; border-radius: 12px; font-weight: bold; cursor: pointer; }
         .theme-toggle-btn { width: 36px; height: 36px; border-radius: 50%; background: #ffb300; border: none; font-size: 1.2em; cursor: pointer; }
         
-        #jam { font-size: 1.8em; color: #ffb300; font-weight: bold; }
-        .promo-badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-weight: bold; color: #fff; font-size: 14px; }
+        #jam { font-size: 1.7em; color: #ffb300; font-weight: bold; font-family: monospace; }
+        .promo-badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-weight: bold; color: #fff; font-size: 13px; text-transform: uppercase; }
         .promo-badge.off { background: #23B14D; }
         .promo-badge.on { background: #E01A1A; animation: promoBlink 0.6s infinite alternate; }
         @keyframes promoBlink { 0% { opacity: 1; } 100% { opacity: 0.6; } }
-        .promo-box { color: #ff5252; font-weight: bold; font-size: 1.2em; margin-left: 6px; }
+        .promo-box { color: #ff5252; font-weight: bold; font-size: 1.15em; margin-left: 6px; font-family: monospace; }
 
-        /* DataTables Custom Styling */
-        .tbl-wrap { width: 100%; overflow-x: auto; margin-bottom: 15px; }
-        table.dataTable { width: 100%!important; border-collapse: collapse; background: #23272b!important; color: #e0e0e0!important; margin-top: 0!important; }
-        table.dataTable thead th { color: #ffb300!important; border-bottom: 2px solid #444!important; padding: 8px; font-size: 13px; text-align: left; white-space: nowrap; }
-        table.dataTable tbody td { border-bottom: 1px solid #333!important; padding: 7px 8px; font-size: 13px; font-weight: bold; white-space: nowrap; }
+        /* Datatable High Contrast & Spacing */
+        .tbl-wrap { width: 100%; overflow-x: auto; margin-bottom: 16px; border-radius: 6px; border: 1px solid #2a2c2e; }
+        table.dataTable { width: 100%!important; border-collapse: collapse; background: #1a1c1e!important; color: #e0e0e0!important; margin-top: 0!important; }
+        table.dataTable thead th { color: #ffb300!important; border-bottom: 2px solid #333!important; padding: 10px 12px; font-size: 13px; text-align: left; white-space: nowrap; font-weight: 700; }
+        table.dataTable tbody td { border-bottom: 1px solid #26282a!important; padding: 9px 12px; font-size: 13px; font-weight: 600; white-space: nowrap; font-family: monospace; }
         
-        .dt-top-controls { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; flex-wrap: wrap; gap: 8px; }
-        .dataTables_length label, .dataTables_filter label { color: #aaa!important; font-size: 13px; display: inline-flex; align-items: center; }
-        .dataTables_length select { background: #1e2124; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 2px 4px; margin: 0 4px; }
-        .dataTables_filter input { background: #1e2124; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 3px 6px; margin-left: 4px; width: 110px; }
-        .dataTables_paginate { text-align: center; margin-top: 8px; }
-        .dataTables_paginate .paginate_button { color: #aaa!important; padding: 3px 8px!important; font-size: 12px!important; cursor: pointer; }
-        .dataTables_paginate .paginate_button.current { background: #ffb300!important; color: #181a1b!important; border-radius: 4px; font-weight: bold; }
+        /* Control Bar Kovdez Top Left/Right */
+        .dt-top-controls { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #1a1c1e; border-bottom: 1px solid #2a2c2e; flex-wrap: wrap; gap: 8px; }
+        .dataTables_length label, .dataTables_filter label { color: #aaa!important; font-size: 12px; display: inline-flex; align-items: center; }
+        .dataTables_length select { background: #121314; color: #fff; border: 1px solid #3d4043; border-radius: 4px; padding: 3px 6px; margin: 0 4px; }
+        .dataTables_filter input { background: #121314; color: #fff; border: 1px solid #3d4043; border-radius: 4px; padding: 4px 8px; margin-left: 4px; width: 110px; outline: none; }
+        .dataTables_paginate { text-align: center; margin-top: 10px; margin-bottom: 6px; }
+        .dataTables_paginate .paginate_button { color: #aaa!important; padding: 4px 10px!important; font-size: 12px!important; cursor: pointer; border-radius: 4px; }
+        .dataTables_paginate .paginate_button.current { background: #ffb300!important; color: #121314!important; font-weight: bold; }
         .dataTables_info { display: none!important; }
 
-        .profit-order-btns { display: inline-flex; gap: 3px; align-items: center; margin-left: 8px; }
-        .profit-btn { padding: 4px 9px; border: 1px solid #555; background: #333; color: #ccc; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; }
-        .profit-btn.active { background: #ffb300; color: #181a1b; border-color: #ffb300; }
+        .profit-order-btns { display: inline-flex; gap: 4px; align-items: center; margin-left: 10px; }
+        .profit-btn { padding: 4px 10px; border: 1px solid #3d4043; background: #26282a; color: #ccc; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        .profit-btn.active { background: #ffb300; color: #121314; border-color: #ffb300; }
         
         .text-green-kovdez { color: #00E124!important; }
         .text-red-kovdez { color: #ff1744!important; }
         
-        /* Grid Layout Bottom & USD Panel Interaktif */
-        .container-flex { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
-        .card { border: 1px solid #444; border-radius: 6px; padding: 12px; background: #23272b; }
-        .card-chart { flex: 2; min-width: 320px; height: 380px; }
-        .card-usd { flex: 1; min-width: 250px; height: 380px; overflow-y: auto; background: #23272b; }
+        /* Grid Layout Bottom Cards */
+        .container-flex { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+        .card { border: 1px solid #2a2c2e; border-radius: 8px; padding: 14px; background: #1a1c1e; }
+        .card-chart { flex: 2; min-width: 320px; height: 390px; }
+        .card-usd { flex: 1; min-width: 260px; height: 390px; overflow-y: auto; }
         
-        .usd-decimal { font-size: 0.8em; opacity: 0.85; }
-        .usd-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-bottom: 1px border-gray-800; font-family: monospace; font-size: 0.9em; transition: background 0.2s; }
-        .usd-item:hover { background: rgba(255, 255, 255, 0.05); }
-        .tv-source-select { background: #181a1b; color: #00E124; border: 1px solid #444; border-radius: 4px; font-weight: bold; padding: 2px 4px; }
-        .spread-num { background: #ff1744; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
-        .limit-num { background: #00E124; color: #181a1b; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
+        /* USD/IDR Widget Styling */
+        .usd-decimal { font-size: 0.85em; opacity: 0.75; }
+        .usd-header-box { background: #121314; padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #2a2c2e; }
+        .usd-list-wrap { display: flex; flex-direction: column; gap: 2px; }
+        .usd-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-radius: 4px; font-family: monospace; font-size: 0.88em; border-bottom: 1px solid #222426; }
+        .usd-item:hover { background: rgba(255, 255, 255, 0.03); }
+        
+        .tv-source-select { background: #121314; color: #00E124; border: 1px solid #3d4043; border-radius: 4px; font-weight: bold; padding: 3px 6px; font-size: 0.85em; }
+        .spread-num { background: #ff1744; color: #fff; padding: 2px 7px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
+        .limit-num { background: #00E124; color: #121314; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
     </style>
 </head>
 <body>
@@ -65,7 +77,7 @@
     <!-- Header Atas -->
     <div class="header">
         <div class="title-wrap">
-            <h2 style="margin:0; font-size: 1.2em;">🧈 Treasury ➺</h2>
+            <h2 style="margin:0; font-size: 1.25em;">🧈 Treasury ➺</h2>
             <a href="#" class="tele-icon">➢</a>
             <a href="#" class="wa-icon">💬</a>
             <button class="promo-btn">🎁</button>
@@ -75,9 +87,9 @@
     </div>
 
     <!-- Jam & Status Promo -->
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
         <div id="jam">Loading...</div>
-        <div>
+        <div style="display:flex; align-items:center;">
             <span id="promoBadge" class="promo-badge off">OFF</span>
             <span class="promo-box">📌 <span id="refPrice">2.565.001</span></span>
         </div>
@@ -102,38 +114,37 @@
         </table>
     </div>
 
-    <!-- Grid Chart TradingView & Google Finance USD Panel -->
+    <!-- Grid Chart TradingView & Panel Google Finance USD/IDR -->
     <div class="container-flex">
         <div class="card card-chart">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
-                <div style="display:flex; align-items:center; gap:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
+                <div style="display:flex; align-items:center; gap:8px;">
                     <h3 style="margin:0; font-size:1em;">XAU</h3>
                     <select id="tvSource" class="tv-source-select">
                         <option value="FOREXCOM">FOREXCOM</option>
                         <option value="OANDA">OANDA</option>
                         <option value="BYBIT:XAUTUSDT">XAUT-Bybit</option>
                     </select>
-                    <span style="color:#ff1744; font-weight:bold; font-size:0.9em;">Spread:<span class="spread-num" id="spreadValue">-3.39%</span></span>
+                    <span style="color:#ff1744; font-weight:bold; font-size:0.88em;">Spread:<span class="spread-num" id="spreadValue">-3.39%</span></span>
                 </div>
-                <div style="color:#00E124; font-weight:bold; font-size:0.9em;">
+                <div style="color:#00E124; font-weight:bold; font-size:0.88em;">
                     Limit Bulan ini:<span class="limit-num" id="limitBulan">5</span>
                 </div>
             </div>
-            <div id="tradingview_chart" style="height:310px;"></div>
+            <div id="tradingview_chart" style="height:320px;"></div>
         </div>
 
-        <!-- Panel Harga USD/IDR Google Finance Interaktif & Rapi -->
         <div class="card card-usd">
-            <h3 style="margin-top:0; font-size:0.95em; border-b border-gray-700 pb-2;">Harga USD/IDR Google Finance</h3>
-            <div style="background: #181a1b; padding: 8px 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #333;">
-                <span style="font-size:0.8em; color:#aaa;">Harga saat ini:</span>
-                <div id="currentPrice" class="text-green-kovdez" style="font-weight:bold; font-size:1.1em; margin-top:2px;">
+            <h3 style="margin-top:0; font-size:0.95em; color:#e0e0e0; margin-bottom:10px; font-weight:bold;">Harga USD/IDR Google Finance</h3>
+            <div class="usd-header-box">
+                <div style="font-size:0.78em; color:#888; text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">Harga saat ini</div>
+                <div id="currentPrice" class="text-green-kovdez" style="font-weight:bold; font-size:1.15em; margin-top:2px; font-family:monospace;">
                     17.914<span class="usd-decimal">,1000</span> 🚀
                 </div>
             </div>
-            <h4 style="margin:6px 0; font-size:0.85em; color:#aaa;">Harga Terakhir:</h4>
-            <div id="priceListContainer" style="display:flex; flex-direction:column; gap:4px;">
-                <!-- Dikelola via JS Dynamic -->
+            <h4 style="margin:8px 0 6px; font-size:0.82em; color:#888; text-transform:uppercase; font-weight:bold;">Harga Terakhir:</h4>
+            <div id="priceListContainer" class="usd-list-wrap">
+                <!-- Data Rendered Dynamic via JS -->
             </div>
         </div>
     </div>
@@ -253,18 +264,16 @@
         function renderUsdPanel(usdList) {
             if (!usdList || !usdList.length) return;
             
-            // Current Price Top
             var top = usdList[0];
             $('#currentPrice').html(formatUsdFormat(top.price) + ' 🚀');
 
-            // Render Log History Below
             var html = '';
             usdList.forEach(function(item) {
                 var icon = item.status === 'up' ? '🟢' : (item.status === 'down' ? '🔴' : '➖');
                 html += `
                     <div class="usd-item">
-                        <span style="color:#e0e0e0; font-weight:bold;">${formatUsdFormat(item.price)}</span>
-                        <span style="color:#888; font-size:0.8em;">(${item.time}) ${icon}</span>
+                        <span style="color:#e0e0e0; font-weight:600;">${formatUsdFormat(item.price)}</span>
+                        <span style="color:#777; font-size:0.8em;">(${item.time}) ${icon}</span>
                     </div>
                 `;
             });
@@ -275,7 +284,7 @@
             var src = $('#tvSource').val() || 'FOREXCOM';
             var sym = src.indexOf(':') !== -1 ? src : src + ':XAUUSD';
             new TradingView.widget({
-                width: "100%", height: 310, symbol: sym, interval: "15",
+                width: "100%", height: 320, symbol: sym, interval: "15",
                 timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "id",
                 container_id: "tradingview_chart"
             });
