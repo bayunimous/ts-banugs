@@ -11,13 +11,13 @@ module.exports = async (req, res) => {
     let isPromoActive = false;
     let promoDiscount = 29999;
     let limitBulanIni = 5;
-    let liveUsdIdr = 17901.9753;
+    let liveUsdIdr = 17912.3513;
 
-    // 1. Ambil Data Emas Treasury
+    // 1. Fetch Data Treasury Live
     try {
         const response = await axios.get('https://indonesia-gold-api.vercel.app/api/treasury', {
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-            timeout: 4000
+            timeout: 3000
         });
 
         if (response.data && response.data.data) {
@@ -30,20 +30,13 @@ module.exports = async (req, res) => {
         }
     } catch (err) {}
 
-    // 2. Ambil Kurs USD/IDR Realtime
+    // 2. Fetch Kurs USD/IDR Live
     try {
-        const usdRes = await axios.get('https://open.er-api.com/v6/latest/USD', { timeout: 3000 });
+        const usdRes = await axios.get('https://open.er-api.com/v6/latest/USD', { timeout: 2500 });
         if (usdRes.data && usdRes.data.rates && usdRes.data.rates.IDR) {
             liveUsdIdr = parseFloat(usdRes.data.rates.IDR);
         }
-    } catch (err) {
-        try {
-            const usdRes2 = await axios.get('https://api.exchangerate-api.com/v4/latest/USD', { timeout: 3000 });
-            if (usdRes2.data && usdRes2.data.rates && usdRes2.data.rates.IDR) {
-                liveUsdIdr = parseFloat(usdRes2.data.rates.IDR);
-            }
-        } catch (e) {}
-    }
+    } catch (err) {}
 
     const now = new Date();
     const wibTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
@@ -52,9 +45,7 @@ module.exports = async (req, res) => {
     const seconds = String(wibTime.getUTCSeconds()).padStart(2, '0');
     const currentTimeStr = `${hours}:${minutes}:${seconds}`;
 
-    const formattedUsdPrice = liveUsdIdr.toLocaleString('id-ID', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
-
-    // Matriks Rumus Cuan Kovdez
+    // Rumus Presisi Cuan Kovdez
     function calcKovdezCuan(tierKey, buy, sell) {
         const exactMap = {
             jt10: { val: -8070, tx: 10000000 },
@@ -108,6 +99,21 @@ module.exports = async (req, res) => {
         });
     }
 
+    // Histori Default Seeder Persis Kovdez saat Inisialisasi
+    const seedUsdHistory = [
+        { price: "17.912,3513", time: "11:41:59", status: "down", raw: 17912.3513 },
+        { price: "17.914,1000", time: "11:40:49", status: "up", raw: 17914.1000 },
+        { price: "17.912,3513", time: "11:38:45", status: "down", raw: 17912.3513 },
+        { price: "17.914,1000", time: "11:38:35", status: "up", raw: 17914.1000 },
+        { price: "17.912,3513", time: "11:37:55", status: "down", raw: 17912.3513 },
+        { price: "17.914,1000", time: "11:36:43", status: "up", raw: 17914.1000 },
+        { price: "17.912,3513", time: "11:36:23", status: "down", raw: 17912.3513 },
+        { price: "17.914,1000", time: "11:35:54", status: "up", raw: 17914.1000 },
+        { price: "17.912,3513", time: "11:35:08", status: "down", raw: 17912.3513 },
+        { price: "17.914,1000", time: "11:34:25", status: "up", raw: 17914.1000 },
+        { price: "17.912,3513", time: "11:34:15", status: "down", raw: 17912.3513 }
+    ];
+
     return res.status(200).json({
         success: true,
         promo_status: isPromoActive ? 1 : 0,
@@ -115,9 +121,10 @@ module.exports = async (req, res) => {
         limit_bulan: limitBulanIni,
         history: history,
         current_usd: {
-            price: formattedUsdPrice,
+            price: liveUsdIdr.toLocaleString('id-ID', { minimumFractionDigits: 4, maximumFractionDigits: 4 }),
             time: currentTimeStr,
             raw: liveUsdIdr
-        }
+        },
+        usd_idr_history: seedUsdHistory
     });
 };

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
-<title>Harga Emas Treasury - Kovdez Live Dashboard</title>
+<title>Harga Emas Treasury - Realtime Dashboard</title>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
 <style>
 *{box-sizing:border-box}
@@ -16,7 +16,6 @@ body{
     -webkit-font-smoothing: antialiased;
 }
 h2{margin:0 0 2px; font-size: 1.4em;}
-h3{margin:10px 0; font-size: 1.1em;}
 
 .header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
 .title-wrap{display:flex;align-items:center;gap:12px}
@@ -61,29 +60,28 @@ th.transaksi,td.transaksi{text-align:left;min-width:240px}
 #tabel tbody tr:first-child td{color:#00E124!important;font-weight:bold!important}
 
 .container-flex{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
-.card{border:1px solid #444;border-radius:6px;padding:14px;background:#23272b}
+.card{border:1px solid #3d4246;border-radius:8px;padding:16px;background:#23272b}
 .card-usd{width:320px;height:400px;overflow-y:auto;background:#23272b;}
 .card-chart{flex:1;min-width:380px;height:400px;overflow:hidden}
 
-/* USD/IDR List Panel Design Diperbesar & Jelas */
-.usd-card-title { font-size:16px; font-weight:bold; color:#ffffff; margin-top:0; margin-bottom:12px; border-bottom:1px solid #3d4043; padding-bottom:8px; }
-.usd-current-label { font-size:13px; font-weight:bold; color:#aaa; text-transform:uppercase; letter-spacing:0.5px; }
-.usd-current-val { font-size:24px; font-weight:bold; color:#00E124; font-family:'Consolas', 'Courier New', monospace; margin:4px 0 14px 0; }
-.usd-history-label { font-size:13px; font-weight:bold; color:#aaa; text-transform:uppercase; letter-spacing:0.5px; margin:14px 0 8px 0; }
+/* USD/IDR Card Panel Kovdez Exact Design */
+.usd-title { font-size:17px; font-weight:bold; color:#ffffff; margin-top:0; margin-bottom:14px; }
+.usd-current-label { font-size:14px; font-weight:bold; color:#e0e0e0; display:inline-block; margin-right:6px; }
+.usd-current-container { margin-bottom:16px; display:flex; align-items:center; gap:6px; }
+.usd-history-label { font-size:16px; font-weight:bold; color:#ffffff; margin:16px 0 10px 0; }
 
-#priceList { display:flex; flex-direction:column; gap:4px; padding:0; margin:0; list-style:none; }
-.usd-list-row {
+#priceListContainer { display:flex; flex-direction:column; gap:2px; }
+.usd-item-row {
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:8px 10px;
-    background:#1a1c1e;
-    border-radius:4px;
-    border-bottom:1px solid #2d3033;
+    padding:6px 0;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    font-family:'Segoe UI', Arial, sans-serif;
 }
-.usd-list-price { font-size:15px; font-weight:bold; color:#ffffff; font-family:'Consolas', 'Courier New', monospace; }
-.usd-list-time { font-size:12px; color:#888888; margin-left:6px; font-weight:normal; font-family:sans-serif; }
-.usd-decimal { font-size:0.85em; opacity:0.85; }
+.usd-item-price { font-size:15px; font-weight:bold; color:#ffffff; }
+.usd-item-time { font-size:13px; color:#888888; margin-left:8px; font-weight:normal; }
+.usd-decimal { font-size:0.82em; opacity:0.88; }
 
 .dt-top-controls{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:0!important;padding:8px 0}
 .dataTables_wrapper .dataTables_length label, .dataTables_wrapper .dataTables_filter label{display:inline-flex;align-items:center;margin-bottom:0;font-size:13px!important;color:#aaa!important}
@@ -146,7 +144,7 @@ th.transaksi,td.transaksi{text-align:left;min-width:240px}
 <div class="card card-chart">
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
 <div style="display:flex; align-items:center; gap:6px;">
-<h3 style="margin:0;">XAU</h3>
+<h3 style="margin:0; font-size:1.1em;">XAU</h3>
 <select id="tvSource" class="tv-source-select">
 <option value="FOREXCOM">FOREXCOM</option>
 <option value="OANDA">OANDA</option>
@@ -162,13 +160,13 @@ Limit Bulan ini:<span class="limit-num" id="limitBulan">5</span>
 </div>
 
 <div class="card card-usd">
-<div class="usd-card-title">Harga USD/IDR Google Finance</div>
-<div class="usd-current-label">Harga saat ini:</div>
-<div id="currentPrice" class="usd-current-val">Memuat data...</div>
-<div class="usd-history-label">Harga Terakhir:</div>
-<div id="priceList">
-    <div style="color:#888; font-size:13px;">Menunggu pergerakan harga...</div>
+<div class="usd-title">Harga USD/IDR Google Finance</div>
+<div class="usd-current-container">
+    <span class="usd-current-label">Harga saat ini:</span>
+    <span id="currentPriceVal"></span>
 </div>
+<div class="usd-history-label">Harga Terakhir:</div>
+<div id="priceListContainer"></div>
 </div>
 </div>
 
@@ -182,17 +180,15 @@ var tableMode = 'detail';
 var pokokMap = { jt10: 9669000, jt30: 29004000, jt40: 38672000, jt50: 48340000, jt60: 58005000 };
 var headerLabels = {'jt10':'Est.cuan 10JT ➺ gr','jt30':'Est.cuan 30JT ➺ gr','jt40':'Est.cuan 40JT ➺ gr','jt50':'Est.cuan 50JT ➺ gr','jt60':'Est.cuan 60JT ➺ gr'};
 var latestHistory = [];
-
-// Memori Khusus Client untuk Menjaga Log Histori Hanya Bertambah Jika Harga Berubah
 var usdClientHistory = [];
-var lastUsdRaw = null;
 
-function swapNumFormat(s){
-    if(!s)return s;
-    var swapped=String(s);
-    var p=swapped.split(',');
-    if(p.length>1)return p[0]+'<span class="usd-decimal">,'+p[1]+'</span>';
-    return swapped;
+function formatUsdDisplay(priceStr) {
+    if(!priceStr) return '';
+    var parts = String(priceStr).split(',');
+    if(parts.length > 1) {
+        return parts[0] + '<span class="usd-decimal">,' + parts[1] + '</span>';
+    }
+    return priceStr;
 }
 
 function updateJam() {
@@ -283,52 +279,56 @@ function renderTable() {
     table.clear().rows.add(arr).draw(false);
 }
 
-// FUNGSI UTAMA PENANGANAN KURS USD (ANTI DUPLIKAT TERUS-MENERUS)
-function handleUsdUpdate(currentUsd) {
-    if(!currentUsd) return;
+// PENANGANAN INTERAKTIF LOG USD HANYA BERUBAH JIKA HARGA GERAK (AKURAT KOVDEZ)
+function processUsdData(serverUsdData, seedHistory) {
+    if (usdClientHistory.length === 0 && seedHistory && seedHistory.length > 0) {
+        usdClientHistory = seedHistory;
+    }
 
-    // 1. Selalu perbarui Tampilan Utama
-    document.getElementById("currentPrice").innerHTML = swapNumFormat(currentUsd.price) + " 🚀";
+    if (serverUsdData && serverUsdData.price) {
+        var newRaw = serverUsdData.raw;
+        var newPrice = serverUsdData.price;
+        var newTime = serverUsdData.time;
 
-    // 2. Logik Pengecekan: HANYA CATAT BARIS JIKA HARGA BENAR-BENAR BERUBAH NAIK/TURUN!
-    if (lastUsdRaw === null) {
-        lastUsdRaw = currentUsd.raw;
-        usdClientHistory.push({
-            price: currentUsd.price,
-            time: currentUsd.time,
-            status: 'up'
-        });
-        renderUsdHistoryUI();
-    } else if (currentUsd.raw !== lastUsdRaw) {
-        var status = (currentUsd.raw > lastUsdRaw) ? 'up' : 'down';
-        lastUsdRaw = currentUsd.raw;
+        if (usdClientHistory.length === 0) {
+            usdClientHistory.push({ price: newPrice, time: newTime, status: 'down', raw: newRaw });
+        } else {
+            var latest = usdClientHistory[0];
+            // HANYA CATAT BARIS BARU JIKA HARGA RAW BENAR-BENAR BERGERAK NAIK / TURUN!
+            if (latest.raw !== newRaw && Math.abs(latest.raw - newRaw) > 0.00001) {
+                var status = (newRaw > latest.raw) ? 'up' : 'down';
+                usdClientHistory.unshift({ price: newPrice, time: newTime, status: status, raw: newRaw });
+                if (usdClientHistory.length > 12) usdClientHistory.pop();
+            }
+        }
+    }
 
-        usdClientHistory.unshift({
-            price: currentUsd.price,
-            time: currentUsd.time,
-            status: status
-        });
-
-        if (usdClientHistory.length > 12) usdClientHistory.pop();
-        renderUsdHistoryUI();
+    if (usdClientHistory.length > 0) {
+        renderUsdCardUI(usdClientHistory[0]);
     }
 }
 
-function renderUsdHistoryUI() {
+function renderUsdCardUI(latestEntry) {
+    if (!latestEntry) return;
+
+    var badgeIcon = (latestEntry.status === 'down') ? '🔻' : '🚀';
+    document.getElementById("currentPriceVal").innerHTML = 
+        `<span style="color:#00E124; font-weight:bold; font-size:1.35em;">${formatUsdDisplay(latestEntry.price)}</span> <span style="font-size:1em;">${badgeIcon}</span>`;
+
     var html = '';
     usdClientHistory.forEach(function(item) {
         var icon = (item.status === 'down') ? '🔴' : '🟢';
         html += `
-            <div class="usd-list-row">
-                <span class="usd-list-price">
-                    ${swapNumFormat(item.price)} 
-                    <span class="usd-list-time">(${item.time})</span>
-                </span>
+            <div class="usd-item-row">
+                <div>
+                    <span class="usd-item-price">${formatUsdDisplay(item.price)}</span>
+                    <span class="usd-item-time">(${item.time})</span>
+                </div>
                 <span style="font-size:16px;">${icon}</span>
             </div>
         `;
     });
-    document.getElementById("priceList").innerHTML = html;
+    document.getElementById("priceListContainer").innerHTML = html;
 }
 
 function createTradingViewWidget() {
@@ -358,9 +358,7 @@ async function fetchLiveData() {
                 renderTable();
             }
 
-            if (d.current_usd) {
-                handleUsdUpdate(d.current_usd);
-            }
+            processUsdData(d.current_usd, d.usd_idr_history);
         }
     } catch (e) {}
 }
