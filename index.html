@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
-<title>Harga Emas Treasury - Kovdez Dashboard</title>
+<title>Harga Emas Treasury - Realtime Dashboard</title>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
 <style>
 *{box-sizing:border-box}
@@ -64,7 +64,7 @@ th.transaksi,td.transaksi{text-align:left;min-width:240px}
 .card-usd{width:340px;height:420px;overflow-y:auto;background:#23272b;}
 .card-chart{flex:1;min-width:380px;height:420px;overflow:hidden}
 
-/* USD/IDR Card Panel Kovdez Design */
+/* USD/IDR Card Panel Kovdez Exact Design */
 .usd-title { font-size:18px; font-weight:bold; color:#ffffff; margin-top:0; margin-bottom:14px; border-bottom:1px solid #3d4043; padding-bottom:8px; }
 .usd-current-label { font-size:15px; font-weight:bold; color:#e0e0e0; display:inline-block; margin-right:6px; }
 .usd-current-container { margin-bottom:16px; display:flex; align-items:center; gap:6px; }
@@ -181,8 +181,13 @@ var pokokMap = { jt10: 9669000, jt30: 29004000, jt40: 38672000, jt50: 48340000, 
 var headerLabels = {'jt10':'Est.cuan 10JT ➺ gr','jt30':'Est.cuan 30JT ➺ gr','jt40':'Est.cuan 40JT ➺ gr','jt50':'Est.cuan 50JT ➺ gr','jt60':'Est.cuan 60JT ➺ gr'};
 var latestHistory = [];
 
-// Pelacak Histori USD Riil di LocalStorage
-var usdLogStore = JSON.parse(localStorage.getItem('kovdez_usd_history') || '[]');
+// Bersihkan cache 15850 lama jika tersimpan di LocalStorage
+var savedStore = JSON.parse(localStorage.getItem('kovdez_usd_history') || '[]');
+if (savedStore.length > 0 && (savedStore[0].raw < 17000 || savedStore[0].price.includes('15.850'))) {
+    localStorage.removeItem('kovdez_usd_history');
+    savedStore = [];
+}
+var usdLogStore = savedStore;
 
 function formatUsdDisplay(priceStr) {
     if(!priceStr) return '';
@@ -281,7 +286,6 @@ function renderTable() {
     table.clear().rows.add(arr).draw(false);
 }
 
-// PERINGATAN LOGIKA GOOGLE FINANCE LIVE: HANYA BERTAMBAH JIKA KURS BENAR-BENAR BERGERAK
 function processGoogleFinanceLive(gfData) {
     if (!gfData || !gfData.price) return;
 
@@ -289,7 +293,6 @@ function processGoogleFinanceLive(gfData) {
     var newRaw = gfData.raw;
     var newTime = gfData.time;
 
-    // 1. Jika histori kosong, masukkan harga perdana
     if (usdLogStore.length === 0) {
         usdLogStore.push({
             price: newPriceStr,
@@ -299,7 +302,6 @@ function processGoogleFinanceLive(gfData) {
         });
     } else {
         var top = usdLogStore[0];
-        // 2. HANYA TAMBAH BARIS BARU JIKA HARGA TERPISAH BEDA DARI HARGA TERAKHIR
         if (Math.abs(top.raw - newRaw) > 0.0001) {
             var status = (newRaw > top.raw) ? 'up' : 'down';
             usdLogStore.unshift({
