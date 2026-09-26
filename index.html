@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
-<title>Harga Emas Treasury - Realtime Dashboard</title>
+<title>Harga Emas Treasury - Kovdez Dashboard</title>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
 <style>
 *{box-sizing:border-box}
@@ -38,7 +38,7 @@ table.dataTable thead th{
     font-weight:bold;
     white-space:nowrap;
     padding:12px 10px!important;
-    font-size:14px!important;
+    font-size:15px!important;
     border-bottom:2px solid #444!important;
     color:#ffb300!important;
     background:#23272b!important;
@@ -47,7 +47,7 @@ table.dataTable tbody td{
     padding:10px 10px!important;
     white-space:nowrap;
     border-bottom:1px solid #333!important;
-    font-size:14px!important;
+    font-size:15px!important;
     background:#23272b;
     color:#e0e0e0!important;
     font-weight:600!important;
@@ -61,27 +61,27 @@ th.transaksi,td.transaksi{text-align:left;min-width:240px}
 
 .container-flex{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
 .card{border:1px solid #3d4246;border-radius:8px;padding:16px;background:#23272b}
-.card-usd{width:320px;height:400px;overflow-y:auto;background:#23272b;}
-.card-chart{flex:1;min-width:380px;height:400px;overflow:hidden}
+.card-usd{width:340px;height:420px;overflow-y:auto;background:#23272b;}
+.card-chart{flex:1;min-width:380px;height:420px;overflow:hidden}
 
-/* USD/IDR Card Panel Kovdez Exact Design */
-.usd-title { font-size:17px; font-weight:bold; color:#ffffff; margin-top:0; margin-bottom:14px; }
-.usd-current-label { font-size:14px; font-weight:bold; color:#e0e0e0; display:inline-block; margin-right:6px; }
+/* USD/IDR Card Panel Kovdez Design */
+.usd-title { font-size:18px; font-weight:bold; color:#ffffff; margin-top:0; margin-bottom:14px; border-bottom:1px solid #3d4043; padding-bottom:8px; }
+.usd-current-label { font-size:15px; font-weight:bold; color:#e0e0e0; display:inline-block; margin-right:6px; }
 .usd-current-container { margin-bottom:16px; display:flex; align-items:center; gap:6px; }
 .usd-history-label { font-size:16px; font-weight:bold; color:#ffffff; margin:16px 0 10px 0; }
 
-#priceListContainer { display:flex; flex-direction:column; gap:2px; }
+#priceListContainer { display:flex; flex-direction:column; gap:4px; }
 .usd-item-row {
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:6px 0;
-    border-bottom:1px solid rgba(255,255,255,0.06);
-    font-family:'Segoe UI', Arial, sans-serif;
+    padding:8px 6px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    font-family:'Consolas', 'Segoe UI', monospace;
 }
-.usd-item-price { font-size:15px; font-weight:bold; color:#ffffff; }
-.usd-item-time { font-size:13px; color:#888888; margin-left:8px; font-weight:normal; }
-.usd-decimal { font-size:0.82em; opacity:0.88; }
+.usd-item-price { font-size:16px; font-weight:bold; color:#ffffff; }
+.usd-item-time { font-size:13px; color:#999999; margin-left:8px; font-weight:normal; font-family:sans-serif; }
+.usd-decimal { font-size:0.85em; opacity:0.85; }
 
 .dt-top-controls{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:0!important;padding:8px 0}
 .dataTables_wrapper .dataTables_length label, .dataTables_wrapper .dataTables_filter label{display:inline-flex;align-items:center;margin-bottom:0;font-size:13px!important;color:#aaa!important}
@@ -156,7 +156,7 @@ th.transaksi,td.transaksi{text-align:left;min-width:240px}
 Limit Bulan ini:<span class="limit-num" id="limitBulan">5</span>
 </div>
 </div>
-<div id="tradingview_chart" style="height:330px;"></div>
+<div id="tradingview_chart" style="height:350px;"></div>
 </div>
 
 <div class="card card-usd">
@@ -180,7 +180,9 @@ var tableMode = 'detail';
 var pokokMap = { jt10: 9669000, jt30: 29004000, jt40: 38672000, jt50: 48340000, jt60: 58005000 };
 var headerLabels = {'jt10':'Est.cuan 10JT ➺ gr','jt30':'Est.cuan 30JT ➺ gr','jt40':'Est.cuan 40JT ➺ gr','jt50':'Est.cuan 50JT ➺ gr','jt60':'Est.cuan 60JT ➺ gr'};
 var latestHistory = [];
-var usdClientHistory = [];
+
+// Pelacak Histori USD Riil di LocalStorage
+var usdLogStore = JSON.parse(localStorage.getItem('kovdez_usd_history') || '[]');
 
 function formatUsdDisplay(priceStr) {
     if(!priceStr) return '';
@@ -279,44 +281,52 @@ function renderTable() {
     table.clear().rows.add(arr).draw(false);
 }
 
-// PENANGANAN INTERAKTIF LOG USD HANYA BERUBAH JIKA HARGA GERAK (AKURAT KOVDEZ)
-function processUsdData(serverUsdData, seedHistory) {
-    if (usdClientHistory.length === 0 && seedHistory && seedHistory.length > 0) {
-        usdClientHistory = seedHistory;
-    }
+// PERINGATAN LOGIKA GOOGLE FINANCE LIVE: HANYA BERTAMBAH JIKA KURS BENAR-BENAR BERGERAK
+function processGoogleFinanceLive(gfData) {
+    if (!gfData || !gfData.price) return;
 
-    if (serverUsdData && serverUsdData.price) {
-        var newRaw = serverUsdData.raw;
-        var newPrice = serverUsdData.price;
-        var newTime = serverUsdData.time;
+    var newPriceStr = gfData.price;
+    var newRaw = gfData.raw;
+    var newTime = gfData.time;
 
-        if (usdClientHistory.length === 0) {
-            usdClientHistory.push({ price: newPrice, time: newTime, status: 'down', raw: newRaw });
-        } else {
-            var latest = usdClientHistory[0];
-            // HANYA CATAT BARIS BARU JIKA HARGA RAW BENAR-BENAR BERGERAK NAIK / TURUN!
-            if (latest.raw !== newRaw && Math.abs(latest.raw - newRaw) > 0.00001) {
-                var status = (newRaw > latest.raw) ? 'up' : 'down';
-                usdClientHistory.unshift({ price: newPrice, time: newTime, status: status, raw: newRaw });
-                if (usdClientHistory.length > 12) usdClientHistory.pop();
-            }
+    // 1. Jika histori kosong, masukkan harga perdana
+    if (usdLogStore.length === 0) {
+        usdLogStore.push({
+            price: newPriceStr,
+            time: newTime,
+            status: 'up',
+            raw: newRaw
+        });
+    } else {
+        var top = usdLogStore[0];
+        // 2. HANYA TAMBAH BARIS BARU JIKA HARGA TERPISAH BEDA DARI HARGA TERAKHIR
+        if (Math.abs(top.raw - newRaw) > 0.0001) {
+            var status = (newRaw > top.raw) ? 'up' : 'down';
+            usdLogStore.unshift({
+                price: newPriceStr,
+                time: newTime,
+                status: status,
+                raw: newRaw
+            });
+            if (usdLogStore.length > 15) usdLogStore.pop();
         }
     }
 
-    if (usdClientHistory.length > 0) {
-        renderUsdCardUI(usdClientHistory[0]);
-    }
+    localStorage.setItem('kovdez_usd_history', JSON.stringify(usdLogStore));
+    renderGoogleFinanceUI();
 }
 
-function renderUsdCardUI(latestEntry) {
-    if (!latestEntry) return;
+function renderGoogleFinanceUI() {
+    if (usdLogStore.length === 0) return;
 
-    var badgeIcon = (latestEntry.status === 'down') ? '🔻' : '🚀';
+    var latest = usdLogStore[0];
+    var badgeIcon = (latest.status === 'down') ? '🔻' : '🚀';
+    
     document.getElementById("currentPriceVal").innerHTML = 
-        `<span style="color:#00E124; font-weight:bold; font-size:1.35em;">${formatUsdDisplay(latestEntry.price)}</span> <span style="font-size:1em;">${badgeIcon}</span>`;
+        `<span style="color:#00E124; font-weight:bold; font-size:1.4em; font-family:monospace;">${formatUsdDisplay(latest.price)}</span> <span style="font-size:1em;">${badgeIcon}</span>`;
 
     var html = '';
-    usdClientHistory.forEach(function(item) {
+    usdLogStore.forEach(function(item) {
         var icon = (item.status === 'down') ? '🔴' : '🟢';
         html += `
             <div class="usd-item-row">
@@ -335,7 +345,7 @@ function createTradingViewWidget() {
     var src = $('#tvSource').val() || 'FOREXCOM';
     var sym = src.indexOf(':') !== -1 ? src : src + ':XAUUSD';
     new TradingView.widget({
-        width: "100%", height: 330, symbol: sym, interval: "15",
+        width: "100%", height: 350, symbol: sym, interval: "15",
         timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "id",
         container_id: "tradingview_chart"
     });
@@ -358,7 +368,9 @@ async function fetchLiveData() {
                 renderTable();
             }
 
-            processUsdData(d.current_usd, d.usd_idr_history);
+            if (d.google_finance_usd) {
+                processGoogleFinanceLive(d.google_finance_usd);
+            }
         }
     } catch (e) {}
 }

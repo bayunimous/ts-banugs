@@ -11,13 +11,13 @@ module.exports = async (req, res) => {
     let isPromoActive = false;
     let promoDiscount = 29999;
     let limitBulanIni = 5;
-    let liveUsdIdr = 17912.3513;
+    let liveUsdIdr = 15850.0; // Fallback jika scraping Google Finance gagal
 
-    // 1. Fetch Data Treasury Live
+    // 1. Fetch Data Emas Treasury Live
     try {
         const response = await axios.get('https://indonesia-gold-api.vercel.app/api/treasury', {
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-            timeout: 3000
+            timeout: 3500
         });
 
         if (response.data && response.data.data) {
@@ -30,13 +30,39 @@ module.exports = async (req, res) => {
         }
     } catch (err) {}
 
-    // 2. Fetch Kurs USD/IDR Live
+    // 2. SCRAPING DIRECT REALTIME GOOGLE FINANCE (USD-IDR)
     try {
-        const usdRes = await axios.get('https://open.er-api.com/v6/latest/USD', { timeout: 2500 });
-        if (usdRes.data && usdRes.data.rates && usdRes.data.rates.IDR) {
-            liveUsdIdr = parseFloat(usdRes.data.rates.IDR);
+        const gfRes = await axios.get('https://www.google.com/finance/quote/USD-IDR', {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7'
+            },
+            timeout: 3500
+        });
+
+        if (gfRes.data) {
+            // Tangkap nilai data-last-price dari HTML Google Finance
+            const priceMatch = gfRes.data.match(/data-last-price="([\d\.]+)"/);
+            if (priceMatch && priceMatch[1]) {
+                liveUsdIdr = parseFloat(priceMatch[1]);
+            } else {
+                // Alternative regex parser Google Finance UI class
+                const altMatch = gfRes.data.match(/class="YMlA1d"[^>]*>([\d\.,]+)<\/div>/);
+                if (altMatch && altMatch[1]) {
+                    const cleanStr = altMatch[1].replace(/\./g, '').replace(',', '.');
+                    liveUsdIdr = parseFloat(cleanStr);
+                }
+            }
         }
-    } catch (err) {}
+    } catch (err) {
+        // Fallback cadangan ke Open Exchange Rate jika Google Finance rate limit
+        try {
+            const usdRes = await axios.get('https://open.er-api.com/v6/latest/USD', { timeout: 2500 });
+            if (usdRes.data && usdRes.data.rates && usdRes.data.rates.IDR) {
+                liveUsdIdr = parseFloat(usdRes.data.rates.IDR);
+            }
+        } catch (e) {}
+    }
 
     const now = new Date();
     const wibTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
@@ -45,7 +71,7 @@ module.exports = async (req, res) => {
     const seconds = String(wibTime.getUTCSeconds()).padStart(2, '0');
     const currentTimeStr = `${hours}:${minutes}:${seconds}`;
 
-    // Rumus Presisi Cuan Kovdez
+    // Rumus Kovdez Presisi
     function calcKovdezCuan(tierKey, buy, sell) {
         const exactMap = {
             jt10: { val: -8070, tx: 10000000 },
@@ -99,20 +125,7 @@ module.exports = async (req, res) => {
         });
     }
 
-    // Histori Default Seeder Persis Kovdez saat Inisialisasi
-    const seedUsdHistory = [
-        { price: "17.912,3513", time: "11:41:59", status: "down", raw: 17912.3513 },
-        { price: "17.914,1000", time: "11:40:49", status: "up", raw: 17914.1000 },
-        { price: "17.912,3513", time: "11:38:45", status: "down", raw: 17912.3513 },
-        { price: "17.914,1000", time: "11:38:35", status: "up", raw: 17914.1000 },
-        { price: "17.912,3513", time: "11:37:55", status: "down", raw: 17912.3513 },
-        { price: "17.914,1000", time: "11:36:43", status: "up", raw: 17914.1000 },
-        { price: "17.912,3513", time: "11:36:23", status: "down", raw: 17912.3513 },
-        { price: "17.914,1000", time: "11:35:54", status: "up", raw: 17914.1000 },
-        { price: "17.912,3513", time: "11:35:08", status: "down", raw: 17912.3513 },
-        { price: "17.914,1000", time: "11:34:25", status: "up", raw: 17914.1000 },
-        { price: "17.912,3513", time: "11:34:15", status: "down", raw: 17912.3513 }
-    ];
+    const formattedUsdPrice = liveUsdIdr.toLocaleString('id-ID', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
 
     return res.status(200).json({
         success: true,
@@ -120,11 +133,10 @@ module.exports = async (req, res) => {
         promo_price: "2.565.001",
         limit_bulan: limitBulanIni,
         history: history,
-        current_usd: {
-            price: liveUsdIdr.toLocaleString('id-ID', { minimumFractionDigits: 4, maximumFractionDigits: 4 }),
-            time: currentTimeStr,
-            raw: liveUsdIdr
-        },
-        usd_idr_history: seedUsdHistory
+        google_finance_usd: {
+            price: formattedUsdPrice,
+            raw: liveUsdIdr,
+            time: currentTimeStr
+        }
     });
 };
