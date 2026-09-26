@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harga Emas Treasury - Kovdez Exact Match</title>
+    <title>Harga Emas Treasury - Realtime Dashboard</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; margin: 0; padding: 10px 20px; background: #181a1b; color: #e0e0e0; }
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 12px; background: #181a1b; color: #e0e0e0; }
+        
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
         .title-wrap { display: flex; align-items: center; gap: 8px; }
         .tele-icon, .wa-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: #fff; text-decoration: none; font-weight: bold; font-size: 13px; }
         .tele-icon { background: #0088cc; } .wa-icon { background: #25D366; }
-        .promo-btn { padding: 2px 8px; border: none; background: #ff1744; color: #fff; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .promo-btn { padding: 3px 8px; border: none; background: #ff1744; color: #fff; border-radius: 12px; font-weight: bold; cursor: pointer; }
         .theme-toggle-btn { width: 36px; height: 36px; border-radius: 50%; background: #ffb300; border: none; font-size: 1.2em; cursor: pointer; }
         
         #jam { font-size: 1.8em; color: #ffb300; font-weight: bold; }
@@ -22,21 +23,22 @@
         @keyframes promoBlink { 0% { opacity: 1; } 100% { opacity: 0.6; } }
         .promo-box { color: #ff5252; font-weight: bold; font-size: 1.2em; margin-left: 6px; }
 
-        /* Styling DataTable Kovdez */
+        /* Datatable Styling */
+        .tbl-wrap { width: 100%; overflow-x: auto; margin-bottom: 15px; }
         table.dataTable { width: 100%!important; border-collapse: collapse; background: #23272b!important; color: #e0e0e0!important; margin-top: 0!important; }
-        table.dataTable thead th { color: #ffb300!important; border-bottom: 2px solid #444!important; padding: 8px 6px; font-size: 14px; text-align: left; }
-        table.dataTable tbody td { border-bottom: 1px solid #333!important; padding: 6px; font-size: 13px; font-weight: bold; white-space: nowrap; }
+        table.dataTable thead th { color: #ffb300!important; border-bottom: 2px solid #444!important; padding: 10px 8px; font-size: 13px; text-align: left; white-space: nowrap; }
+        table.dataTable tbody td { border-bottom: 1px solid #333!important; padding: 8px; font-size: 13px; font-weight: bold; white-space: nowrap; }
         
         .dt-top-controls { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; flex-wrap: wrap; gap: 8px; }
         .dataTables_length label, .dataTables_filter label { color: #aaa!important; font-size: 13px; display: inline-flex; align-items: center; }
         .dataTables_length select { background: #1e2124; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 2px 4px; margin: 0 4px; }
-        .dataTables_filter input { background: #1e2124; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 3px 6px; margin-left: 4px; width: 120px; }
-        .dataTables_paginate { text-align: center; margin-top: 8px; }
+        .dataTables_filter input { background: #1e2124; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 3px 6px; margin-left: 4px; width: 110px; }
+        .dataTables_paginate { text-align: center; margin-top: 10px; }
         .dataTables_paginate .paginate_button { color: #aaa!important; padding: 4px 10px!important; font-size: 13px!important; cursor: pointer; }
         .dataTables_paginate .paginate_button.current { background: #ffb300!important; color: #181a1b!important; border-radius: 4px; font-weight: bold; }
         .dataTables_info { display: none!important; }
 
-        .profit-order-btns { display: inline-flex; gap: 3px; align-items: center; margin-left: 10px; }
+        .profit-order-btns { display: inline-flex; gap: 3px; align-items: center; margin-left: 8px; }
         .profit-btn { padding: 4px 9px; border: 1px solid #555; background: #333; color: #ccc; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; }
         .profit-btn.active { background: #ffb300; color: #181a1b; border-color: #ffb300; }
         
@@ -46,10 +48,10 @@
         /* Grid Layout Bottom */
         .container-flex { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
         .card { border: 1px solid #444; border-radius: 6px; padding: 12px; background: #23272b; }
-        .card-chart { flex: 2; min-width: 350px; height: 380px; }
-        .card-usd { flex: 1; min-width: 250px; height: 380px; overflow-y: auto; }
-        .tv-source-select { background: #23272b; color: #00E124; border: 1px solid #444; border-radius: 4px; font-weight: bold; padding: 2px 4px; }
-        .spread-num { background: #00E124; color: #181a1b; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
+        .card-chart { flex: 2; min-width: 320px; height: 380px; }
+        .card-usd { flex: 1; min-width: 240px; height: 380px; overflow-y: auto; }
+        .tv-source-select { background: #181a1b; color: #00E124; border: 1px solid #444; border-radius: 4px; font-weight: bold; padding: 2px 4px; }
+        .spread-num { background: #ff1744; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
         .limit-num { background: #00E124; color: #181a1b; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
     </style>
 </head>
@@ -77,26 +79,28 @@
     </div>
 
     <!-- Tabel Live Monitoring Kovdez -->
-    <table id="tabel" class="dataTable">
-        <thead>
-            <tr>
-                <th>Waktu</th>
-                <th>Data Transaksi</th>
-                <th id="thP1">Est.cuan 10JT ➺ gr</th>
-                <th id="thP2">Est.jual Modal gr</th>
-                <th id="thP3">XAU</th>
-                <th id="thP4">USD</th>
-                <th id="thP5">Anomali</th>
-                <th id="thP6">Spread</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <div class="tbl-wrap">
+        <table id="tabel" class="dataTable">
+            <thead>
+                <tr>
+                    <th>Waktu</th>
+                    <th>Data Transaksi</th>
+                    <th id="thP1">Est.cuan 30JT ➺ gr</th>
+                    <th id="thP2">Est.jual Modal gr</th>
+                    <th id="thP3">XAU</th>
+                    <th id="thP4">USD</th>
+                    <th id="thP5">Anomali</th>
+                    <th id="thP6">Spread</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
     <!-- Grid Chart TradingView & Google Finance USD -->
     <div class="container-flex">
         <div class="card card-chart">
-            <div style="display:flex; justify-between; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
                 <div style="display:flex; align-items:center; gap:6px;">
                     <h3 style="margin:0; font-size:1em;">XAU</h3>
                     <select id="tvSource" class="tv-source-select">
@@ -104,7 +108,7 @@
                         <option value="OANDA">OANDA</option>
                         <option value="BYBIT:XAUTUSDT">XAUT-Bybit</option>
                     </select>
-                    <span style="color:#00E124; font-weight:bold; font-size:0.9em;">Spread:<span class="spread-num" id="spreadValue">-3.39%</span></span>
+                    <span style="color:#ff1744; font-weight:bold; font-size:0.9em;">Spread:<span class="spread-num" id="spreadValue">-3.39%</span></span>
                 </div>
                 <div style="color:#00E124; font-weight:bold; font-size:0.9em;">
                     Limit Bulan ini:<span class="limit-num" id="limitBulan">5</span>
@@ -139,8 +143,7 @@
         function updateJam() {
             var now = new Date();
             var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            var dayName = days[now.getDay()];
-            document.getElementById('jam').innerText = dayName + ', ' + now.toLocaleTimeString('id-ID') + ' WIB';
+            document.getElementById('jam').innerText = days[now.getDay()] + ', ' + now.toLocaleTimeString('id-ID') + ' WIB';
         }
         setInterval(updateJam, 1000); updateJam();
 

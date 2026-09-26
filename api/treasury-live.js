@@ -30,8 +30,8 @@ module.exports = async (req, res) => {
 
     const now = new Date();
     const wibTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
-    
-    // Matriks Nominal Pokok Diskon Modal Kovdez Asli
+
+    // Matriks Pokok Modal Diskon Asli Kovdez (Berdasarkan index.html Kovdez)
     const pokokMap = {
         jt10: 9669000,
         jt30: 29004000,
@@ -40,15 +40,22 @@ module.exports = async (req, res) => {
         jt60: 58005000
     };
 
-    // Fungsi Hitung Cuan Kovdez
-    function calcCuanKovdez(pokok, buy, sell) {
-        var gramCuanRaw = Math.floor((pokok / buy) * 10000) / 10000;
-        var nominalCuan = Math.round((gramCuanRaw * sell) - pokok);
-        var gramStr = parseFloat(gramCuanRaw.toFixed(4)).toString().replace('.', ',') + 'gr';
-        var sign = nominalCuan > 0 ? '+' : '';
-        var nomStr = sign + nominalCuan.toLocaleString('id-ID');
-        var icon = nominalCuan >= 0 ? '🟢' : '🔴';
-        return `${nomStr} ${icon} ${gramStr}`;
+    // LOGIKA PERHITUNGAN CUAN PERSIS KOVDEZ
+    function getKovdezProfitString(pokok, buy, sell) {
+        // 1. Gram Modal (Berdasarkan Harga Jual)
+        var modalGrRaw = Math.floor((pokok / sell) * 10000) / 10000;
+        
+        // 2. Gram Est Beli (Berdasarkan Harga Beli)
+        var buyGrRaw = Math.floor((pokok / buy) * 10000) / 10000;
+        var gramStr = parseFloat(buyGrRaw.toFixed(4)).toString().replace('.', ',') + 'gr';
+
+        // 3. Nominal Selisih Cuan Rupiah Kovdez
+        var nominalDiff = Math.round((buyGrRaw - modalGrRaw) * sell);
+        var sign = nominalDiff > 0 ? '+' : '';
+        var formattedNominal = sign + nominalDiff.toLocaleString('id-ID');
+        var icon = nominalDiff >= 0 ? '🟢' : '🔴';
+
+        return `${formattedNominal} ${icon} ${gramStr}`;
     }
 
     const history = [];
@@ -66,11 +73,11 @@ module.exports = async (req, res) => {
             buying_rate_raw: buyPrice,
             selling_rate_raw: sellPrice,
             diff_display: " — tetap",
-            jt10: calcCuanKovdez(pokokMap.jt10, buyPrice, sellPrice),
-            jt30: calcCuanKovdez(pokokMap.jt30, buyPrice, sellPrice),
-            jt40: calcCuanKovdez(pokokMap.jt40, buyPrice, sellPrice),
-            jt50: calcCuanKovdez(pokokMap.jt50, buyPrice, sellPrice),
-            jt60: calcCuanKovdez(pokokMap.jt60, buyPrice, sellPrice),
+            jt10: getKovdezProfitString(pokokMap.jt10, buyPrice, sellPrice),
+            jt30: getKovdezProfitString(pokokMap.jt30, buyPrice, sellPrice),
+            jt40: getKovdezProfitString(pokokMap.jt40, buyPrice, sellPrice),
+            jt50: getKovdezProfitString(pokokMap.jt50, buyPrice, sellPrice),
+            jt60: getKovdezProfitString(pokokMap.jt60, buyPrice, sellPrice),
             usd_price_buy: 137.8385,
             usdidr: 17914,
             isAnomaly: true,
