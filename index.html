@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
-<title>Harga Emas Treasury - Kovdez Live Dashboard</title>
+<title>Harga Emas Treasury - TradingView Sync Dashboard</title>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
 <style>
 *{box-sizing:border-box}
@@ -181,8 +181,13 @@ var pokokMap = { jt10: 9669000, jt30: 29004000, jt40: 38672000, jt50: 48340000, 
 var headerLabels = {'jt10':'Est.cuan 10JT ➺ gr','jt30':'Est.cuan 30JT ➺ gr','jt40':'Est.cuan 40JT ➺ gr','jt50':'Est.cuan 50JT ➺ gr','jt60':'Est.cuan 60JT ➺ gr'};
 var latestHistory = [];
 
-// Memori lokal browser untuk menyimpan histori harga riil
-var usdRealLog = JSON.parse(localStorage.getItem('kovdez_usd_real_log') || '[]');
+// Bersihkan TOTAL semua cache lama di browser pengguna
+localStorage.removeItem('kovdez_usd_history');
+localStorage.removeItem('kovdez_usd_history_v2');
+localStorage.removeItem('kovdez_usd_history_v3');
+localStorage.removeItem('kovdez_usd_real_log');
+
+var usdTradingViewLog = JSON.parse(localStorage.getItem('tv_usd_history_v4') || '[]');
 
 function formatUsdDisplay(priceStr) {
     if(!priceStr) return '';
@@ -281,45 +286,44 @@ function renderTable() {
     table.clear().rows.add(arr).draw(false);
 }
 
-// LOGIKA MURNI EVENT-DRIVEN HARGA RIIL PASAR
-function processLiveMarketData(usdData) {
+// PENANGANAN HARGA REALTIME TRADINGVIEW
+function processTradingViewData(usdData) {
     if (!usdData || !usdData.price || !usdData.raw) return;
 
     var priceFormatted = usdData.price;
     var rawVal = usdData.raw;
     var timeStr = usdData.time;
 
-    // 1. Jika memori belum ada histori, masukkan data awal
-    if (usdRealLog.length === 0) {
-        usdRealLog.unshift({
+    if (usdTradingViewLog.length === 0) {
+        usdTradingViewLog.unshift({
             price: priceFormatted,
             time: timeStr,
             status: 'up',
             raw: rawVal
         });
-        localStorage.setItem('kovdez_usd_real_log', JSON.stringify(usdRealLog));
+        localStorage.setItem('tv_usd_history_v4', JSON.stringify(usdTradingViewLog));
         renderUsdUI();
         return;
     }
 
-    var latestStored = usdRealLog[0];
+    var latestStored = usdTradingViewLog[0];
 
-    // 2. HANYA BERTAMBAH JIKA PASAR PERGANTIAN ANGKAS DARI BACKEND
+    // HANYA BERTAMBAH JIKA ADA PERGERAKAN HARGA DARI TRADINGVIEW
     if (rawVal !== latestStored.raw) {
         var status = (rawVal > latestStored.raw) ? 'up' : 'down';
 
-        usdRealLog.unshift({
+        usdTradingViewLog.unshift({
             price: priceFormatted,
             time: timeStr,
             status: status,
             raw: rawVal
         });
 
-        if (usdRealLog.length > 15) {
-            usdRealLog.pop();
+        if (usdTradingViewLog.length > 15) {
+            usdTradingViewLog.pop();
         }
 
-        localStorage.setItem('kovdez_usd_real_log', JSON.stringify(usdRealLog));
+        localStorage.setItem('tv_usd_history_v4', JSON.stringify(usdTradingViewLog));
         renderUsdUI();
     } else {
         renderUsdCurrentOnly();
@@ -327,20 +331,20 @@ function processLiveMarketData(usdData) {
 }
 
 function renderUsdCurrentOnly() {
-    if (usdRealLog.length === 0) return;
-    var top = usdRealLog[0];
+    if (usdTradingViewLog.length === 0) return;
+    var top = usdTradingViewLog[0];
     var currentIcon = (top.status === 'down') ? '🔻' : '🚀';
     document.getElementById("currentPriceVal").innerHTML = 
         `<span style="color:#00E124; font-weight:bold; font-size:1.4em; font-family:monospace;">${formatUsdDisplay(top.price)}</span> <span style="font-size:1em;">${currentIcon}</span>`;
 }
 
 function renderUsdUI() {
-    if (usdRealLog.length === 0) return;
+    if (usdTradingViewLog.length === 0) return;
 
     renderUsdCurrentOnly();
 
     var html = '';
-    usdRealLog.forEach(function(item) {
+    usdTradingViewLog.forEach(function(item) {
         var icon = (item.status === 'down') ? '🔴' : '🟢';
         html += `
             <div class="usd-item-row">
@@ -383,7 +387,7 @@ async function fetchLiveData() {
             }
 
             if (d.google_finance_usd) {
-                processLiveMarketData(d.google_finance_usd);
+                processTradingViewData(d.google_finance_usd);
             }
         }
     } catch (e) {}

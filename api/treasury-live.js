@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
     let isPromoActive = false;
     let promoDiscount = 29999;
     let limitBulanIni = 5;
-    let liveUsdIdr = 16250.0; // Fail-safe awal jika seluruh API pasar finansial timeout
+    let liveUsdIdr = 17912.0000; // Default fallback TradingView ICE:USDIDR
 
     // 1. Fetch Data Emas Treasury Live
     try {
@@ -27,31 +27,35 @@ module.exports = async (req, res) => {
             isPromoActive = data.is_promo_active || false;
             promoDiscount = data.promo_discount || 29999;
             limitBulanIni = data.limit_bulan_ini || 5;
-
-            if (data.usdidr || data.usd_idr) {
-                liveUsdIdr = parseFloat(data.usdidr || data.usd_idr);
-            }
         }
     } catch (err) {}
 
-    // 2. Fetch Kurs USD/IDR Murni Realtime dari Pasar Finansial (Yahoo Finance & OpenExchange)
+    // 2. FETCH DIRECT REALTIME DARI API SCANNER TRADINGVIEW (FX_IDC / ICE)
     try {
-        const yfRes = await axios.get('https://query1.finance.yahoo.com/v8/finance/chart/USDIDR=X?interval=1m', {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-            timeout: 2500
+        const tvRes = await axios.post('https://scanner.tradingview.com/forex/scan', {
+            symbols: { tickers: ["FX_IDC:USDIDR", "ICE:USDIDR"] },
+            columns: ["close"]
+        }, {
+            headers: { 
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                'Content-Type': 'application/json'
+            },
+            timeout: 3000
         });
-        if (yfRes.data && yfRes.data.chart && yfRes.data.chart.result[0].meta.regularMarketPrice) {
-            const rate = parseFloat(yfRes.data.chart.result[0].meta.regularMarketPrice);
-            if (rate > 10000) liveUsdIdr = rate;
+
+        if (tvRes.data && tvRes.data.data && tvRes.data.data.length > 0) {
+            const tvPrice = tvRes.data.data[0].d[0];
+            if (tvPrice && tvPrice > 10000) {
+                liveUsdIdr = parseFloat(tvPrice);
+            }
         }
-    } catch (e) {
+    } catch (err) {
         try {
             const openRes = await axios.get('https://open.er-api.com/v6/latest/USD', { timeout: 2000 });
             if (openRes.data && openRes.data.rates && openRes.data.rates.IDR) {
-                const rate2 = parseFloat(openRes.data.rates.IDR);
-                if (rate2 > 10000) liveUsdIdr = rate2;
+                liveUsdIdr = parseFloat(openRes.data.rates.IDR);
             }
-        } catch (err2) {}
+        } catch (e) {}
     }
 
     const now = new Date();
