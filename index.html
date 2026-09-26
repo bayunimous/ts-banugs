@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
-<title>Harga Emas Treasury - TradingView Sync Dashboard</title>
+<title>Harga Emas Treasury - Kovdez Dashboard</title>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
 <style>
 *{box-sizing:border-box}
@@ -32,7 +32,6 @@ h2{margin:0 0 2px; font-size: 1.4em;}
 .promo-btn{padding:4px 10px;border:2px solid #00E124;background:linear-gradient(135deg,#00E124,#00ff41);color:#181a1b;border-radius:20px;font-size:1em;cursor:pointer;font-weight:bold}
 .theme-toggle-btn{padding:0;border:none;border-radius:50%;background:#ffb300;color:#222;cursor:pointer;font-size:1.5em;width:42px;height:42px;display:flex;align-items:center;justify-content:center}
 
-/* DataTable Kovdez Styling & Font Diperbesar */
 table.dataTable{width:100%!important;border-collapse:collapse;background:#23272b!important;color:#e0e0e0!important}
 table.dataTable thead th{
     font-weight:bold;
@@ -56,7 +55,6 @@ table.dataTable tbody td{
 th.waktu,td.waktu{width:85px;min-width:80px;text-align:center;font-weight:bold!important;}
 th.transaksi,td.transaksi{text-align:left;min-width:240px}
 
-/* Baris Pertama Warna Neon Green Kovdez */
 #tabel tbody tr:first-child td{color:#00E124!important;font-weight:bold!important}
 
 .container-flex{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
@@ -64,7 +62,6 @@ th.transaksi,td.transaksi{text-align:left;min-width:240px}
 .card-usd{width:340px;height:420px;overflow-y:auto;background:#23272b;}
 .card-chart{flex:1;min-width:380px;height:420px;overflow:hidden}
 
-/* USD/IDR Card Panel Kovdez Exact Design */
 .usd-title { font-size:18px; font-weight:bold; color:#ffffff; margin-top:0; margin-bottom:14px; border-bottom:1px solid #3d4043; padding-bottom:8px; }
 .usd-current-label { font-size:15px; font-weight:bold; color:#e0e0e0; display:inline-block; margin-right:6px; }
 .usd-current-container { margin-bottom:16px; display:flex; align-items:center; gap:6px; }
@@ -181,13 +178,7 @@ var pokokMap = { jt10: 9669000, jt30: 29004000, jt40: 38672000, jt50: 48340000, 
 var headerLabels = {'jt10':'Est.cuan 10JT ➺ gr','jt30':'Est.cuan 30JT ➺ gr','jt40':'Est.cuan 40JT ➺ gr','jt50':'Est.cuan 50JT ➺ gr','jt60':'Est.cuan 60JT ➺ gr'};
 var latestHistory = [];
 
-// Bersihkan TOTAL semua cache lama di browser pengguna
-localStorage.removeItem('kovdez_usd_history');
-localStorage.removeItem('kovdez_usd_history_v2');
-localStorage.removeItem('kovdez_usd_history_v3');
-localStorage.removeItem('kovdez_usd_real_log');
-
-var usdTradingViewLog = JSON.parse(localStorage.getItem('tv_usd_history_v4') || '[]');
+var usdClientLog = JSON.parse(localStorage.getItem('kovdez_usd_hybrid_log') || '[]');
 
 function formatUsdDisplay(priceStr) {
     if(!priceStr) return '';
@@ -286,44 +277,43 @@ function renderTable() {
     table.clear().rows.add(arr).draw(false);
 }
 
-// PENANGANAN HARGA REALTIME TRADINGVIEW
-function processTradingViewData(usdData) {
+function handleUsdHybrid(usdData) {
     if (!usdData || !usdData.price || !usdData.raw) return;
 
     var priceFormatted = usdData.price;
     var rawVal = usdData.raw;
     var timeStr = usdData.time;
 
-    if (usdTradingViewLog.length === 0) {
-        usdTradingViewLog.unshift({
+    if (usdClientLog.length === 0) {
+        usdClientLog.unshift({
             price: priceFormatted,
             time: timeStr,
             status: 'up',
             raw: rawVal
         });
-        localStorage.setItem('tv_usd_history_v4', JSON.stringify(usdTradingViewLog));
+        localStorage.setItem('kovdez_usd_hybrid_log', JSON.stringify(usdClientLog));
         renderUsdUI();
         return;
     }
 
-    var latestStored = usdTradingViewLog[0];
+    var latestStored = usdClientLog[0];
 
-    // HANYA BERTAMBAH JIKA ADA PERGERAKAN HARGA DARI TRADINGVIEW
+    // HANYA BERTAMBAH JIKA ADA PERGERAKAN NAIK/TURUN
     if (rawVal !== latestStored.raw) {
         var status = (rawVal > latestStored.raw) ? 'up' : 'down';
 
-        usdTradingViewLog.unshift({
+        usdClientLog.unshift({
             price: priceFormatted,
             time: timeStr,
             status: status,
             raw: rawVal
         });
 
-        if (usdTradingViewLog.length > 15) {
-            usdTradingViewLog.pop();
+        if (usdClientLog.length > 12) {
+            usdClientLog.pop();
         }
 
-        localStorage.setItem('tv_usd_history_v4', JSON.stringify(usdTradingViewLog));
+        localStorage.setItem('kovdez_usd_hybrid_log', JSON.stringify(usdClientLog));
         renderUsdUI();
     } else {
         renderUsdCurrentOnly();
@@ -331,20 +321,20 @@ function processTradingViewData(usdData) {
 }
 
 function renderUsdCurrentOnly() {
-    if (usdTradingViewLog.length === 0) return;
-    var top = usdTradingViewLog[0];
+    if (usdClientLog.length === 0) return;
+    var top = usdClientLog[0];
     var currentIcon = (top.status === 'down') ? '🔻' : '🚀';
     document.getElementById("currentPriceVal").innerHTML = 
         `<span style="color:#00E124; font-weight:bold; font-size:1.4em; font-family:monospace;">${formatUsdDisplay(top.price)}</span> <span style="font-size:1em;">${currentIcon}</span>`;
 }
 
 function renderUsdUI() {
-    if (usdTradingViewLog.length === 0) return;
+    if (usdClientLog.length === 0) return;
 
     renderUsdCurrentOnly();
 
     var html = '';
-    usdTradingViewLog.forEach(function(item) {
+    usdClientLog.forEach(function(item) {
         var icon = (item.status === 'down') ? '🔴' : '🟢';
         html += `
             <div class="usd-item-row">
@@ -387,7 +377,7 @@ async function fetchLiveData() {
             }
 
             if (d.google_finance_usd) {
-                processTradingViewData(d.google_finance_usd);
+                handleUsdHybrid(d.google_finance_usd);
             }
         }
     } catch (e) {}

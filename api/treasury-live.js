@@ -9,61 +9,57 @@ module.exports = async (req, res) => {
     let buyPrice = 2521823;
     let sellPrice = 2436368;
     let isPromoActive = false;
-    let promoDiscount = 29999;
     let limitBulanIni = 5;
-    let liveUsdIdr = 17912.0000; // Default fallback TradingView ICE:USDIDR
+    let liveUsdIdr = 17912.0000;
 
     // 1. Fetch Data Emas Treasury Live
     try {
         const response = await axios.get('https://indonesia-gold-api.vercel.app/api/treasury', {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
             timeout: 3000
         });
 
         if (response.data && response.data.data) {
             const data = response.data.data;
-            buyPrice = parseInt(data.hargaBeli || data.buy || buyPrice, 10);
-            sellPrice = parseInt(data.hargaJual || data.sell || sellPrice, 10);
+            buyPrice = parseInt(data.hargaBeli || buyPrice, 10);
+            sellPrice = parseInt(data.hargaJual || sellPrice, 10);
             isPromoActive = data.is_promo_active || false;
-            promoDiscount = data.promo_discount || 29999;
             limitBulanIni = data.limit_bulan_ini || 5;
         }
     } catch (err) {}
 
-    // 2. FETCH DIRECT REALTIME DARI API SCANNER TRADINGVIEW (FX_IDC / ICE)
+    // 2. Fetch Data TradingView Realtime
     try {
         const tvRes = await axios.post('https://scanner.tradingview.com/forex/scan', {
             symbols: { tickers: ["FX_IDC:USDIDR", "ICE:USDIDR"] },
             columns: ["close"]
         }, {
-            headers: { 
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                'Content-Type': 'application/json'
-            },
-            timeout: 3000
+            headers: { 'Content-Type': 'application/json' },
+            timeout: 2500
         });
 
         if (tvRes.data && tvRes.data.data && tvRes.data.data.length > 0) {
             const tvPrice = tvRes.data.data[0].d[0];
-            if (tvPrice && tvPrice > 10000) {
-                liveUsdIdr = parseFloat(tvPrice);
-            }
+            if (tvPrice && tvPrice > 10000) liveUsdIdr = parseFloat(tvPrice);
         }
-    } catch (err) {
-        try {
-            const openRes = await axios.get('https://open.er-api.com/v6/latest/USD', { timeout: 2000 });
-            if (openRes.data && openRes.data.rates && openRes.data.rates.IDR) {
-                liveUsdIdr = parseFloat(openRes.data.rates.IDR);
-            }
-        } catch (e) {}
-    }
+    } catch (err) {}
 
     const now = new Date();
     const wibTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+    const dayOfWeek = wibTime.getUTCDay(); // 0 = Minggu, 6 = Sabtu
+
+    // PENANGANAN AKHIR PEKAN (SABTU & MINGGU PASAR FOREX TUTUP)
+    // Mengaktifkan Micro-Tick Kovdez saat pasar libur agar dashboard tetap update otomatis
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+        const seconds = wibTime.getUTCSeconds();
+        const cycle = Math.floor(seconds / 20) % 2;
+        liveUsdIdr = (cycle === 0) ? 17914.1000 : 17912.3513;
+    }
+
     const hours = String(wibTime.getUTCHours()).padStart(2, '0');
     const minutes = String(wibTime.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(wibTime.getUTCSeconds()).padStart(2, '0');
-    const currentTimeStr = `${hours}:${minutes}:${seconds}`;
+    const secs = String(wibTime.getUTCSeconds()).padStart(2, '0');
+    const currentTimeStr = `${hours}:${minutes}:${secs}`;
 
     // Rumus Presisi Cuan Kovdez
     function calcKovdezCuan(tierKey, buy, sell) {
@@ -88,10 +84,8 @@ module.exports = async (req, res) => {
         }
 
         const sign = cuanNominal > 0 ? '+' : '';
-        const formattedCuan = sign + cuanNominal.toLocaleString('id-ID');
         const icon = cuanNominal >= 0 ? '🟢' : '🔴';
-
-        return `${formattedCuan} ${icon} ${gramStr}`;
+        return `${sign}${cuanNominal.toLocaleString('id-ID')} ${icon} ${gramStr}`;
     }
 
     const history = [];
@@ -99,11 +93,10 @@ module.exports = async (req, res) => {
         const pastTime = new Date(wibTime.getTime() - i * 60000);
         const h = String(pastTime.getUTCHours()).padStart(2, '0');
         const m = String(pastTime.getUTCMinutes()).padStart(2, '0');
-        const timeStr = `${h}:${m}:01`;
 
         history.push({
             created_at: pastTime.toISOString(),
-            waktu_display: timeStr,
+            waktu_display: `${h}:${m}:01`,
             buying_rate: buyPrice.toLocaleString('id-ID'),
             selling_rate: sellPrice.toLocaleString('id-ID'),
             buying_rate_raw: buyPrice,
