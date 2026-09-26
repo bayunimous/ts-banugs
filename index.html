@@ -1,173 +1,169 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harga Emas Treasury - Kovdez Full Clone</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Harga Emas Treasury - Kovdez Exact Match</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
     <style>
-        body { background-[#181a1b] color: #e0e0e0; font-family: Arial, sans-serif; background-color: #181a1b; }
-        .text-green-kovdez { color: #00E124; }
-        .bg-green-kovdez { background-color: #23B14D; }
-        .bg-red-kovdez { background-color: #E01A1A; }
-        .usd-decimal { font-size: 0.8em; opacity: 0.85; }
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 10px 20px; background: #181a1b; color: #e0e0e0; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+        .title-wrap { display: flex; align-items: center; gap: 8px; }
+        .tele-icon, .wa-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: #fff; text-decoration: none; font-weight: bold; font-size: 13px; }
+        .tele-icon { background: #0088cc; } .wa-icon { background: #25D366; }
+        .promo-btn { padding: 2px 8px; border: none; background: #ff1744; color: #fff; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .theme-toggle-btn { width: 36px; height: 36px; border-radius: 50%; background: #ffb300; border: none; font-size: 1.2em; cursor: pointer; }
         
-        /* DataTables Custom Kovdez Styling */
-        table.dataTable { width: 100%!important; border-collapse: collapse; background: #23272b!important; color: #e0e0e0!important; }
-        table.dataTable thead th { color: #ffb300!important; border-bottom: 2px solid #444!important; padding: 8px; font-size: 13px; }
-        table.dataTable tbody td { border-bottom: 1px solid #333!important; padding: 6px 8px; font-size: 12px; font-weight: 600; }
-        .dataTables_length label, .dataTables_filter label { color: #aaa!important; font-size: 12px; }
-        .dataTables_paginate .paginate_button { color: #aaa!important; padding: 2px 8px!important; font-size: 12px!important; }
-        .dataTables_paginate .paginate_button.current { background: #ffb300!important; color: #222!important; border: none!important; font-weight: bold; }
-        
-        /* Profit Buttons */
-        .profit-btn { padding: 3px 8px; border: 1px solid #555; background: #333; color: #ccc; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; }
-        .profit-btn.active { background: #ffb300; color: #222; border-color: #ffb300; }
+        #jam { font-size: 1.8em; color: #ffb300; font-weight: bold; }
+        .promo-badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-weight: bold; color: #fff; font-size: 14px; }
+        .promo-badge.off { background: #23B14D; }
+        .promo-badge.on { background: #E01A1A; animation: promoBlink 0.6s infinite alternate; }
         @keyframes promoBlink { 0% { opacity: 1; } 100% { opacity: 0.6; } }
-        .blink-on { animation: promoBlink 0.6s infinite alternate; }
+        .promo-box { color: #ff5252; font-weight: bold; font-size: 1.2em; margin-left: 6px; }
+
+        /* Styling DataTable Kovdez */
+        table.dataTable { width: 100%!important; border-collapse: collapse; background: #23272b!important; color: #e0e0e0!important; margin-top: 0!important; }
+        table.dataTable thead th { color: #ffb300!important; border-bottom: 2px solid #444!important; padding: 8px 6px; font-size: 14px; text-align: left; }
+        table.dataTable tbody td { border-bottom: 1px solid #333!important; padding: 6px; font-size: 13px; font-weight: bold; white-space: nowrap; }
+        
+        .dt-top-controls { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; flex-wrap: wrap; gap: 8px; }
+        .dataTables_length label, .dataTables_filter label { color: #aaa!important; font-size: 13px; display: inline-flex; align-items: center; }
+        .dataTables_length select { background: #1e2124; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 2px 4px; margin: 0 4px; }
+        .dataTables_filter input { background: #1e2124; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 3px 6px; margin-left: 4px; width: 120px; }
+        .dataTables_paginate { text-align: center; margin-top: 8px; }
+        .dataTables_paginate .paginate_button { color: #aaa!important; padding: 4px 10px!important; font-size: 13px!important; cursor: pointer; }
+        .dataTables_paginate .paginate_button.current { background: #ffb300!important; color: #181a1b!important; border-radius: 4px; font-weight: bold; }
+        .dataTables_info { display: none!important; }
+
+        .profit-order-btns { display: inline-flex; gap: 3px; align-items: center; margin-left: 10px; }
+        .profit-btn { padding: 4px 9px; border: 1px solid #555; background: #333; color: #ccc; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; }
+        .profit-btn.active { background: #ffb300; color: #181a1b; border-color: #ffb300; }
+        
+        .text-green-kovdez { color: #00E124!important; }
+        .text-red-kovdez { color: #ff1744!important; }
+        
+        /* Grid Layout Bottom */
+        .container-flex { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        .card { border: 1px solid #444; border-radius: 6px; padding: 12px; background: #23272b; }
+        .card-chart { flex: 2; min-width: 350px; height: 380px; }
+        .card-usd { flex: 1; min-width: 250px; height: 380px; overflow-y: auto; }
+        .tv-source-select { background: #23272b; color: #00E124; border: 1px solid #444; border-radius: 4px; font-weight: bold; padding: 2px 4px; }
+        .spread-num { background: #00E124; color: #181a1b; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
+        .limit-num { background: #00E124; color: #181a1b; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-left: 4px; }
     </style>
 </head>
-<body class="p-4 max-w-[1400px] mx-auto">
+<body>
 
     <!-- Header Atas -->
-    <header class="flex flex-wrap items-center justify-between border-b border-gray-800 pb-2 mb-2">
-        <div class="flex items-center gap-2">
-            <h1 class="text-xl font-bold flex items-center gap-1 text-gray-100">🧈 Treasury ➺</h1>
-            <div class="flex items-center gap-1.5 ml-2">
-                <span class="w-7 h-7 rounded-full bg-[#29b6f6] text-white flex items-center justify-center text-xs font-bold">➢</span>
-                <span class="w-7 h-7 rounded-full bg-[#25D366] text-white flex items-center justify-center text-xs font-bold">💬</span>
-                <span class="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold">🎁</span>
-            </div>
-            <span id="anomaliDisplay" class="text-xs font-bold text-red-500 ml-2"></span>
+    <div class="header">
+        <div class="title-wrap">
+            <h2 style="margin:0; font-size: 1.2em;">🧈 Treasury ➺</h2>
+            <a href="#" class="tele-icon">➢</a>
+            <a href="#" class="wa-icon">💬</a>
+            <button class="promo-btn">🎁</button>
+            <span id="anomaliDisplay" class="text-red-kovdez" style="font-weight:bold; font-size:0.85em;">⚠️ (-Rp 29.999)</span>
         </div>
-        <button class="w-9 h-9 rounded-full bg-amber-400 text-gray-900 flex items-center justify-center text-lg font-bold">☀️</button>
-    </header>
+        <button class="theme-toggle-btn">☀️</button>
+    </div>
 
-    <!-- Jam, Promo Status & Ref Price -->
-    <div class="flex items-center gap-3 mb-3 flex-wrap">
-        <div id="jam" class="text-2xl font-bold text-amber-400 font-mono">Loading Jam...</div>
-        <div class="flex items-center gap-1">
-            <span id="promoBadge" class="bg-green-kovdez text-white text-xs px-2 py-0.5 rounded font-bold uppercase">OFF</span>
-            <span class="text-red-500 font-bold text-lg font-mono flex items-center gap-1">📌 <span id="refPrice">...</span></span>
+    <!-- Jam & Status Promo -->
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <div id="jam">Loading...</div>
+        <div>
+            <span id="promoBadge" class="promo-badge off">OFF</span>
+            <span class="promo-box">📌 <span id="refPrice">2.565.001</span></span>
         </div>
     </div>
 
-    <!-- Tabel Monitoring Transaksi DataTable -->
-    <div class="overflow-x-auto mb-2">
-        <table id="tabel" class="display w-full">
-            <thead>
-                <tr>
-                    <th class="waktu">Waktu</th>
-                    <th class="transaksi">Data Transaksi</th>
-                    <th id="thP1">Est.cuan 10JT ➺ gr</th>
-                    <th id="thP2">Est.jual Modal gr</th>
-                    <th id="thP3">XAU</th>
-                    <th id="thP4">USD</th>
-                    <th id="thP5">Anomali</th>
-                    <th id="thP6">Spread</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+    <!-- Tabel Live Monitoring Kovdez -->
+    <table id="tabel" class="dataTable">
+        <thead>
+            <tr>
+                <th>Waktu</th>
+                <th>Data Transaksi</th>
+                <th id="thP1">Est.cuan 10JT ➺ gr</th>
+                <th id="thP2">Est.jual Modal gr</th>
+                <th id="thP3">XAU</th>
+                <th id="thP4">USD</th>
+                <th id="thP5">Anomali</th>
+                <th id="thP6">Spread</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-    <!-- Chart XAU/USD & Google Finance USD/IDR Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 my-6">
-        <div class="lg:col-span-2 border border-gray-800 rounded p-3 bg-[#23272b]">
-            <div class="flex justify-between items-center mb-2 flex-wrap gap-2">
-                <div class="flex items-center gap-2">
-                    <h3 class="text-sm font-bold text-gray-200">XAU</h3>
-                    <select id="tvSource" class="bg-[#181a1b] border border-gray-700 text-green-kovdez text-xs p-1 rounded font-bold outline-none">
+    <!-- Grid Chart TradingView & Google Finance USD -->
+    <div class="container-flex">
+        <div class="card card-chart">
+            <div style="display:flex; justify-between; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <h3 style="margin:0; font-size:1em;">XAU</h3>
+                    <select id="tvSource" class="tv-source-select">
                         <option value="FOREXCOM">FOREXCOM</option>
                         <option value="OANDA">OANDA</option>
                         <option value="BYBIT:XAUTUSDT">XAUT-Bybit</option>
                     </select>
-                    <span class="text-xs font-bold text-red-500">Spread: <span id="spreadValue" class="bg-red-500 text-white px-2 py-0.5 rounded text-xs">-3.39%</span></span>
+                    <span style="color:#00E124; font-weight:bold; font-size:0.9em;">Spread:<span class="spread-num" id="spreadValue">-3.39%</span></span>
                 </div>
-                <div class="text-xs font-bold text-green-kovdez">
-                    Limit Bulan ini: <span id="limitBulan" class="bg-red-600 text-white px-2 py-0.5 rounded">5</span>
+                <div style="color:#00E124; font-weight:bold; font-size:0.9em;">
+                    Limit Bulan ini:<span class="limit-num" id="limitBulan">5</span>
                 </div>
             </div>
-            <div id="tradingview_chart" class="h-[350px]"></div>
+            <div id="tradingview_chart" style="height:310px;"></div>
         </div>
 
-        <!-- Panel Harga USD/IDR Google Finance -->
-        <div class="border border-gray-800 rounded p-3 bg-[#23272b]">
-            <h3 class="text-sm font-bold text-gray-200 mb-2">Harga USD/IDR Google Finance</h3>
-            <p class="text-xs text-gray-400 mb-2">Harga saat ini: <span id="currentPrice" class="text-green-kovdez font-bold text-base">Memuat...</span></p>
-            <h4 class="text-xs font-bold text-gray-400 mb-1">Harga Terakhir:</h4>
-            <ul id="priceList" class="text-xs font-mono space-y-1 max-h-[260px] overflow-y-auto">
-                <li class="text-gray-500">Menunggu data...</li>
+        <div class="card card-usd">
+            <h3 style="margin-top:0; font-size:1em;">Harga USD/IDR Google Finance</h3>
+            <p style="font-size:0.9em;">Harga saat ini: <span id="currentPrice" class="text-green-kovdez" style="font-weight:bold;">17.914,1000 🚀</span></p>
+            <h4 style="margin:10px 0 5px; font-size:0.9em;">Harga Terakhir:</h4>
+            <ul id="priceList" style="list-style:none; padding:0; margin:0; font-size:0.85em; font-family:monospace;">
+                <li>17.914,1000 <span style="color:gray;">(10:35:58)</span> 🟢</li>
+                <li>17.912,3513 <span style="color:gray;">(10:33:35)</span> 🔴</li>
             </ul>
         </div>
     </div>
 
-    <!-- Section Kalkulator Emas Persis Kovdez -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-        <div class="border border-gray-800 rounded p-4 bg-[#23272b]">
-            <h4 class="font-bold text-sm mb-2 text-gray-200">💰 Hitung Beli</h4>
-            <div class="text-xs text-gray-400 mb-3 bg-[#181a1b] p-2 rounded">Harga: <span id="buyRateDisplay" class="text-red-500 font-bold">-</span>/gr</div>
-            <div class="mb-3">
-                <label class="block text-xs text-gray-400 mb-1">Masukkan Rupiah (IDR)</label>
-                <input type="text" id="buyIdr" placeholder="Contoh: 88.000.000" class="w-full bg-[#181a1b] border border-gray-700 p-2 text-xs rounded text-white outline-none">
-            </div>
-            <div>
-                <label class="block text-xs text-gray-400 mb-1">Gram ↔</label>
-                <input type="text" id="buyGram" placeholder="isi gram, contoh: 0.8888" class="w-full bg-[#181a1b] border border-gray-700 p-2 text-xs rounded text-white outline-none">
-            </div>
-        </div>
-
-        <div class="border border-gray-800 rounded p-4 bg-[#23272b]">
-            <h4 class="font-bold text-sm mb-2 text-gray-200">💸 Hitung Jual</h4>
-            <div class="text-xs text-gray-400 mb-3 bg-[#181a1b] p-2 rounded">Harga: <span id="sellRateDisplay" class="text-red-500 font-bold">-</span>/gr</div>
-            <div class="mb-3">
-                <label class="block text-xs text-gray-400 mb-1">Masukkan Gram</label>
-                <input type="text" id="sellGram" placeholder="Contoh: 0.8888" class="w-full bg-[#181a1b] border border-gray-700 p-2 text-xs rounded text-white outline-none">
-            </div>
-            <div>
-                <label class="block text-xs text-gray-400 mb-1">Rupiah (IDR) ↔</label>
-                <input type="text" id="sellIdr" placeholder="isi nominal, contoh: 88.000.000" class="w-full bg-[#181a1b] border border-gray-700 p-2 text-xs rounded text-white outline-none">
-            </div>
-        </div>
-    </div>
-
-    <!-- Dependensi Pustaka Kovdez -->
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script src="https://s3.tradingview.com/tv.js"></script>
 
     <script>
-        var profitPriority = 'jt10';
+        var profitPriority = 'jt30';
         var tableMode = 'detail';
         var pokokMap = { jt10: 9669000, jt30: 29004000, jt40: 38672000, jt50: 48340000, jt60: 58005000 };
         var headerLabels = {'jt10':'Est.cuan 10JT ➺ gr','jt30':'Est.cuan 30JT ➺ gr','jt40':'Est.cuan 40JT ➺ gr','jt50':'Est.cuan 50JT ➺ gr','jt60':'Est.cuan 60JT ➺ gr'};
         var latestHistory = [];
-        var latestBuyRate = 2521823;
-        var latestSellRate = 2436368;
 
         function updateJam() {
             var now = new Date();
             var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            document.getElementById('jam').innerText = days[now.getDay()] + ', ' + now.toLocaleTimeString('id-ID') + ' WIB';
+            var dayName = days[now.getDay()];
+            document.getElementById('jam').innerText = dayName + ', ' + now.toLocaleTimeString('id-ID') + ' WIB';
         }
         setInterval(updateJam, 1000); updateJam();
 
-        // Inisialisasi DataTable Kovdez
         var table = $('#tabel').DataTable({
-            pageLength: 5,
-            lengthMenu: [5, 10, 20, 50],
+            pageLength: 4,
+            lengthMenu: [4, 8, 18, 88, 361],
             order: [],
             columns: [
-                { data: "waktu", className: "waktu" },
-                { data: "transaction", className: "transaksi" },
+                { data: "waktu" }, { data: "transaction" },
                 { data: "p1" }, { data: "p2" }, { data: "p3" }, { data: "p4" }, { data: "p5" }, { data: "p6" }
             ],
-            language: { emptyTable: "Menunggu data...", lengthMenu: "⚙️ _MENU_", search: "🔍" },
+            language: {
+                emptyTable: "Menunggu data...",
+                lengthMenu: "⚙️ _MENU_",
+                search: "🔍",
+                paginate: { previous: "Kembali", next: "Lanjut" }
+            },
             initComplete: function() {
                 var filterDiv = $('.dataTables_filter');
-                var btnsHtml = '<div class="flex items-center gap-1 mr-3" id="profitOrderBtns"><button class="profit-btn active" id="modeABtn">A</button>';
-                ['10','30','40','50','60'].forEach(function(v){ btnsHtml += '<button class="profit-btn" data-val="'+v+'">'+v+'</button>'; });
+                var btnsHtml = '<div class="profit-order-btns" id="profitOrderBtns"><button class="profit-btn" id="modeABtn">A</button>';
+                ['10','30','40','50','60'].forEach(function(v){
+                    btnsHtml += '<button class="profit-btn'+(v==='30'?' active':'')+'" data-val="'+v+'">'+v+'</button>';
+                });
                 btnsHtml += '</div>';
                 filterDiv.before($(btnsHtml));
 
@@ -175,7 +171,6 @@
                     tableMode = tableMode === 'a' ? 'detail' : 'a';
                     $(this).toggleClass('active', tableMode === 'a');
                     table.column(7).visible(tableMode === 'detail');
-                    updateHeaders();
                     renderTable();
                 });
 
@@ -207,7 +202,7 @@
             if (tableMode === 'a') {
                 arr = latestHistory.map(function(d) {
                     return {
-                        waktu: `<span class="text-red-500 font-bold">${d.waktu_display}</span>`,
+                        waktu: `<span class="text-red-kovdez">${d.waktu_display}</span>`,
                         transaction: `<span class="text-green-kovdez">Beli: ${d.buying_rate} Jual: ${d.selling_rate}</span>${d.diff_display}`,
                         p1: d.jt10, p2: d.jt30, p3: d.jt40, p4: d.jt50, p5: d.jt60, p6: ''
                     };
@@ -216,16 +211,18 @@
                 var pokok = pokokMap[profitPriority];
                 arr = latestHistory.map(function(d) {
                     var modalGr = Math.floor((pokok / d.selling_rate_raw) * 10000) / 10000;
+                    var modalGrStr = parseFloat(modalGr.toFixed(4)).toString().replace('.',',') + 'gr';
                     var spreadPct = (((d.selling_rate_raw - d.buying_rate_raw) / d.buying_rate_raw) * 100).toFixed(2) + '%';
+                    
                     return {
-                        waktu: `<span class="text-red-500 font-bold">${d.waktu_display}</span>`,
+                        waktu: `<span class="text-red-kovdez">${d.waktu_display}</span>`,
                         transaction: `<span class="text-green-kovdez">Beli: ${d.buying_rate} Jual: ${d.selling_rate}</span>${d.diff_display}`,
                         p1: d[profitPriority],
-                        p2: `${parseFloat(modalGr.toFixed(4)).toString().replace('.',',')}gr`,
-                        p3: `$${(d.usd_price_buy * 31.1035).toFixed(2)}`,
-                        p4: `Rp${d.usdidr.toLocaleString('id-ID')}`,
+                        p2: `<span class="text-green-kovdez">${modalGrStr}</span>`,
+                        p3: `<span class="text-green-kovdez">$${(d.usd_price_buy * 31.1035).toFixed(2).replace('.',',')}</span>`,
+                        p4: `<span class="text-green-kovdez">Rp${d.usdidr.toLocaleString('id-ID')}</span>`,
                         p5: `⚠️ (-Rp 29.999)`,
-                        p6: `<span class="text-red-500">${spreadPct}</span>`
+                        p6: `<span class="text-red-kovdez">${spreadPct}</span>`
                     };
                 });
             }
@@ -236,7 +233,7 @@
             var src = $('#tvSource').val() || 'FOREXCOM';
             var sym = src.indexOf(':') !== -1 ? src : src + ':XAUUSD';
             new TradingView.widget({
-                width: "100%", height: 350, symbol: sym, interval: "15",
+                width: "100%", height: 310, symbol: sym, interval: "15",
                 timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "id",
                 container_id: "tradingview_chart"
             });
@@ -250,27 +247,13 @@
                 var d = await res.json();
                 
                 if (d.success) {
-                    $('#promoBadge').text(d.promo_status ? 'ON' : 'OFF').toggleClass('bg-red-kovdez blink-on', d.promo_status === 1).toggleClass('bg-green-kovdez', d.promo_status !== 1);
+                    $('#promoBadge').text(d.promo_status ? 'ON' : 'OFF').toggleClass('on', d.promo_status === 1).toggleClass('off', d.promo_status !== 1);
                     if (d.promo_price) $('#refPrice').text(d.promo_price);
                     if (d.limit_bulan !== undefined) $('#limitBulan').text(d.limit_bulan);
                     
                     if (d.history && d.history.length) {
                         latestHistory = d.history;
-                        latestBuyRate = d.history[0].buying_rate_raw;
-                        latestSellRate = d.history[0].selling_rate_raw;
-                        $('#buyRateDisplay').text(`Rp ${latestBuyRate.toLocaleString('id-ID')}`);
-                        $('#sellRateDisplay').text(`Rp ${latestSellRate.toLocaleString('id-ID')}`);
-                        
-                        var spread = (((latestSellRate - latestBuyRate) / latestBuyRate) * 100).toFixed(2) + '%';
-                        $('#spreadValue').text(spread);
                         renderTable();
-                    }
-
-                    if (d.usd_idr_history) {
-                        $('#currentPrice').html(d.usd_idr_history[0].price + ' 🚀');
-                        var html = '';
-                        d.usd_idr_history.forEach(function(u){ html += `<li>${u.price} <span class="text-gray-500">(${u.time})</span> 🟢</li>`; });
-                        $('#priceList').html(html);
                     }
                 }
             } catch (e) {}
