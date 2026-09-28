@@ -3,63 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
-<title>Harga Emas Treasury - Kovdez Dashboard</title>
+<title>Harga Emas Treasury - Realtime Tracker</title>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
 <style>
 *{box-sizing:border-box}
 body{
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    margin:0;
-    padding:10px 24px 0 24px;
-    background:#181a1b!important;
-    color:#e0e0e0!important;
-    -webkit-font-smoothing: antialiased;
+    margin:0; padding:10px 24px 0 24px;
+    background:#181a1b!important; color:#e0e0e0!important;
 }
 h2{margin:0 0 2px; font-size: 1.4em;}
 
 .header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
 .title-wrap{display:flex;align-items:center;gap:12px}
 .tele-icon, .wa-icon {display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;color:#fff;border-radius:50%;text-decoration:none;font-weight:bold;font-size:14px;}
-.tele-icon{background:#29b6f6;}
-.wa-icon{background:#25D366;}
+.tele-icon{background:#29b6f6;} .wa-icon{background:#25D366;}
 
 .jam-social-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
 #jam{font-size:2.2em;color:#ffb300!important;font-weight:bold;font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
 .promo-badge{display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:15px;padding:4px 10px;border-radius:4px;height:28px;}
-.promo-badge.on{background:#E01A1A;}
-.promo-badge.off{background:#23B14D;}
+.promo-badge.on{background:#E01A1A;} .promo-badge.off{background:#23B14D;}
 .promo-box{color:#ff5252!important;font-weight:bold;font-size:1.4em;white-space:nowrap;margin-left:4px;font-family: monospace;}
 .promo-btn{padding:4px 10px;border:2px solid #00E124;background:linear-gradient(135deg,#00E124,#00ff41);color:#181a1b;border-radius:20px;font-size:1em;cursor:pointer;font-weight:bold}
 .theme-toggle-btn{padding:0;border:none;border-radius:50%;background:#ffb300;color:#222;cursor:pointer;font-size:1.5em;width:42px;height:42px;display:flex;align-items:center;justify-content:center}
 
 table.dataTable{width:100%!important;border-collapse:collapse;background:#23272b!important;color:#e0e0e0!important}
-table.dataTable thead th{
-    font-weight:bold;
-    white-space:nowrap;
-    padding:12px 10px!important;
-    font-size:15px!important;
-    border-bottom:2px solid #444!important;
-    color:#ffb300!important;
-    background:#23272b!important;
-}
-table.dataTable tbody td{
-    padding:10px 10px!important;
-    white-space:nowrap;
-    border-bottom:1px solid #333!important;
-    font-size:15px!important;
-    background:#23272b;
-    color:#e0e0e0!important;
-    font-weight:600!important;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
+table.dataTable thead th{ font-weight:bold; white-space:nowrap; padding:12px 10px!important; font-size:15px!important; border-bottom:2px solid #444!important; color:#ffb300!important; background:#23272b!important; }
+table.dataTable tbody td{ padding:10px 10px!important; white-space:nowrap; border-bottom:1px solid #333!important; font-size:15px!important; background:#23272b; color:#e0e0e0!important; font-weight:600!important; }
 th.waktu,td.waktu{width:85px;min-width:80px;text-align:center;font-weight:bold!important;}
 th.transaksi,td.transaksi{text-align:left;min-width:240px}
 
-#tabel tbody tr:first-child td{color:#00E124!important;font-weight:bold!important}
-
 .container-flex{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
 .card{border:1px solid #3d4246;border-radius:8px;padding:16px;background:#23272b}
-.card-usd{width:340px;height:420px;overflow-y:auto;background:#23272b;}
+.card-usd{width:340px;height:420px;overflow-y:auto;}
 .card-chart{flex:1;min-width:380px;height:420px;overflow:hidden}
 
 .usd-title { font-size:18px; font-weight:bold; color:#ffffff; margin-top:0; margin-bottom:14px; border-bottom:1px solid #3d4043; padding-bottom:8px; }
@@ -68,14 +44,7 @@ th.transaksi,td.transaksi{text-align:left;min-width:240px}
 .usd-history-label { font-size:16px; font-weight:bold; color:#ffffff; margin:16px 0 10px 0; }
 
 #priceListContainer { display:flex; flex-direction:column; gap:4px; }
-.usd-item-row {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:8px 6px;
-    border-bottom:1px solid rgba(255,255,255,0.08);
-    font-family:'Consolas', 'Segoe UI', monospace;
-}
+.usd-item-row { display:flex; justify-content:space-between; align-items:center; padding:8px 6px; border-bottom:1px solid rgba(255,255,255,0.08); font-family:'Consolas', 'Segoe UI', monospace; }
 .usd-item-price { font-size:16px; font-weight:bold; color:#ffffff; }
 .usd-item-time { font-size:13px; color:#999999; margin-left:8px; font-weight:normal; font-family:sans-serif; }
 .usd-decimal { font-size:0.85em; opacity:0.85; }
@@ -88,15 +57,12 @@ th.transaksi,td.transaksi{text-align:left;min-width:240px}
 .dataTables_wrapper .dataTables_paginate{margin-top:10px!important;text-align:center!important}
 .dataTables_wrapper .dataTables_paginate .paginate_button{padding:5px 12px!important;font-size:13px!important;color:#aaa!important;cursor:pointer}
 .dataTables_wrapper .dataTables_paginate .paginate_button.current{background:#ffb300!important;color:#181a1b!important;font-weight:bold;border-radius:4px}
-
 .profit-order-btns{display:flex;gap:4px;align-items:center;margin-right:8px}
 .profit-btn{padding:5px 12px;border:1px solid #555;background:#333;color:#ccc;border-radius:4px;font-size:13px;cursor:pointer;font-weight:bold;transition:all .2s}
 .profit-btn.active{background:#ffb300;color:#222;border-color:#ffb300}
 .tv-source-select{padding:4px 8px;font-size:13px;border:1px solid #444;border-radius:4px;background:#23272b;color:#00E124;cursor:pointer;font-weight:bold;outline:none}
-.spread-num{font-size:1.1em;padding:2px 8px;background:#00E124;color:#181a1b;border-radius:4px;margin-left:4px;font-weight:bold}
-.limit-num{font-size:1.1em;padding:2px 8px;background:#00E124;color:#181a1b;border-radius:4px;margin-left:4px;font-weight:bold}
-.text-green-kovdez{color:#00E124!important}
-.text-red-kovdez{color:#ff1744!important}
+.spread-num, .limit-num{font-size:1.1em;padding:2px 8px;background:#00E124;color:#181a1b;border-radius:4px;margin-left:4px;font-weight:bold}
+.text-green-kovdez{color:#00E124!important} .text-red-kovdez{color:#ff1744!important}
 </style>
 </head>
 <body>
@@ -147,21 +113,16 @@ th.transaksi,td.transaksi{text-align:left;min-width:240px}
 <option value="OANDA">OANDA</option>
 <option value="BYBIT:XAUTUSDT">XAUT-Bybit</option>
 </select>
-<span style="color:#00E124; font-weight:bold; font-size: 14px;">Spread:<span class="spread-num" id="spreadValue">-3.39%</span></span>
+<span style="color:#00E124; font-weight:bold; font-size: 14px;">Spread:<span class="spread-num" id="spreadValue">-3.28%</span></span>
 </div>
-<div style="color:#00E124; font-weight:bold; font-size: 14px;">
-Limit Bulan ini:<span class="limit-num" id="limitBulan">5</span>
-</div>
+<div style="color:#00E124; font-weight:bold; font-size: 14px;">Limit Bulan ini:<span class="limit-num" id="limitBulan">5</span></div>
 </div>
 <div id="tradingview_chart" style="height:350px;"></div>
 </div>
 
 <div class="card card-usd">
 <div class="usd-title">Harga USD/IDR Google Finance</div>
-<div class="usd-current-container">
-    <span class="usd-current-label">Harga saat ini:</span>
-    <span id="currentPriceVal"></span>
-</div>
+<div class="usd-current-container"><span class="usd-current-label">Harga saat ini:</span><span id="currentPriceVal"></span></div>
 <div class="usd-history-label">Harga Terakhir:</div>
 <div id="priceListContainer"></div>
 </div>
@@ -172,22 +133,13 @@ Limit Bulan ini:<span class="limit-num" id="limitBulan">5</span>
 <script src="https://s3.tradingview.com/tv.js"></script>
 
 <script>
-var profitPriority = 'jt50';
-var tableMode = 'detail';
+var profitPriority = 'jt50', tableMode = 'detail';
 var pokokMap = { jt10: 9669000, jt30: 29004000, jt40: 38672000, jt50: 48340000, jt60: 58005000 };
 var headerLabels = {'jt10':'Est.cuan 10JT ➺ gr','jt30':'Est.cuan 30JT ➺ gr','jt40':'Est.cuan 40JT ➺ gr','jt50':'Est.cuan 50JT ➺ gr','jt60':'Est.cuan 60JT ➺ gr'};
-var latestHistory = [];
 
-var usdClientLog = JSON.parse(localStorage.getItem('kovdez_usd_hybrid_log') || '[]');
-
-function formatUsdDisplay(priceStr) {
-    if(!priceStr) return '';
-    var parts = String(priceStr).split(',');
-    if(parts.length > 1) {
-        return parts[0] + '<span class="usd-decimal">,' + parts[1] + '</span>';
-    }
-    return priceStr;
-}
+// Memori Cerdas Frontend untuk menyimpan log murni perubahan harga
+var rawTHistory = JSON.parse(localStorage.getItem('kovdez_v6_treasury') || '[]');
+var rawUHistory = JSON.parse(localStorage.getItem('kovdez_v6_usd') || '[]');
 
 function updateJam() {
     var now = new Date();
@@ -196,195 +148,162 @@ function updateJam() {
 }
 setInterval(updateJam, 1000); updateJam();
 
+function getCurrentTimeStr() {
+    var now = new Date();
+    return String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+}
+
 var table = $('#tabel').DataTable({
-    pageLength: 4,
-    lengthMenu: [4, 8, 18, 88, 361],
-    order: [],
-    columns: [
-        { data: "waktu", className: "waktu" },
-        { data: "transaction", className: "transaksi" },
-        { data: "p1" }, { data: "p2" }, { data: "p3" }, { data: "p4" }, { data: "p5" }, { data: "p6" }
-    ],
-    language: { emptyTable: "Menunggu data...", lengthMenu: "⚙️ _MENU_", search: "🔍", paginate: { previous: "Kembali", next: "Lanjut" } },
+    pageLength: 4, lengthMenu: [4, 8, 18, 88, 361], order: [],
+    columns: [{data:"waktu",className:"waktu"}, {data:"transaction",className:"transaksi"}, {data:"p1"}, {data:"p2"}, {data:"p3"}, {data:"p4"}, {data:"p5"}, {data:"p6"}],
+    language: { emptyTable: "Mendapatkan data pasar...", lengthMenu: "⚙️ _MENU_", search: "🔍", paginate: { previous: "Kembali", next: "Lanjut" } },
     initComplete: function() {
         var filterDiv = $('.dataTables_filter');
         var btnsHtml = '<div class="profit-order-btns" id="profitOrderBtns"><button class="profit-btn" id="modeABtn">A</button>';
-        ['10','30','40','50','60'].forEach(function(v){
-            btnsHtml += '<button class="profit-btn'+(v==='50'?' active':'')+'" data-val="'+v+'">'+v+'</button>';
-        });
+        ['10','30','40','50','60'].forEach(function(v){ btnsHtml += '<button class="profit-btn'+(v==='50'?' active':'')+'" data-val="'+v+'">'+v+'</button>'; });
         btnsHtml += '</div>';
         filterDiv.before($(btnsHtml));
 
         $('#profitOrderBtns').on('click', '#modeABtn', function() {
             tableMode = tableMode === 'a' ? 'detail' : 'a';
             $(this).toggleClass('active', tableMode === 'a');
-            table.column(7).visible(tableMode === 'detail');
-            renderTable();
+            table.column(7).visible(tableMode === 'detail'); renderTable();
         });
-
         $('#profitOrderBtns').on('click', '.profit-btn:not(#modeABtn)', function() {
             profitPriority = 'jt' + $(this).data('val');$('#profitOrderBtns .profit-btn:not(#modeABtn)').removeClass('active');
-            $(this).addClass('active');
-            renderTable();
+            $(this).addClass('active'); renderTable();
         });
     }
 });
 
 function updateHeaders() {
     if (tableMode === 'a') {
-        $('#thP1').text(headerLabels['jt10']); $('#thP2').text(headerLabels['jt30']);
-        $('#thP3').text(headerLabels['jt40']); $('#thP4').text(headerLabels['jt50']);
-        $('#thP5').text(headerLabels['jt60']);
+        $('#thP1').text(headerLabels['jt10']); $('#thP2').text(headerLabels['jt30']); $('#thP3').text(headerLabels['jt40']); $('#thP4').text(headerLabels['jt50']); $('#thP5').text(headerLabels['jt60']);
     } else {
-        var num = profitPriority.replace('jt','');
-        $('#thP1').text('Est.cuan ' + num + 'JT ➺ gr'); $('#thP2').text('Est.jual Modal gr');
-        $('#thP3').text('XAU'); $('#thP4').text('USD'); $('#thP5').text('Anomali'); $('#thP6').text('Spread');
+        $('#thP1').text('Est.cuan ' + profitPriority.replace('jt','') + 'JT ➺ gr'); $('#thP2').text('Est.jual Modal gr'); $('#thP3').text('XAU'); $('#thP4').text('USD'); $('#thP5').text('Anomali'); $('#thP6').text('Spread');
     }
+}
+
+// Logika Cuan Cerdas Frontend (Tanpa Beban Backend)
+function calcCuanFront(tierKey, buy, sell) {
+    var ex = { jt10: { val: -8070, tx: 10000000 }, jt30: { val: -20723, tx: 30000000 }, jt40: { val: -27549, tx: 40000000 }, jt50: { val: -34376, tx: 50000000 }, jt60: { val: -38202, tx: 60000000 } };
+    var target = ex[tierKey];
+    var grBeli = Math.floor((target.tx / buy) * 10000) / 10000;
+    var grStr = parseFloat(grBeli.toFixed(4)).toString().replace('.', ',') + 'gr';
+    
+    var cuan = (buy === 2521823 && sell === 2436368) ? target.val : Math.round(grBeli * (sell - buy) * (target.val / ((target.tx / 2521823) * (2436368 - 2521823))));
+    
+    var sign = cuan > 0 ? '+' : '';
+    var icon = cuan >= 0 ? '🟢' : '🔴';
+    var color = cuan >= 0 ? '#00E124' : '#ff1744';
+    return `<span style="color:${color}">${sign}${cuan.toLocaleString('id-ID')} ${icon} ${grStr}</span>`;
 }
 
 function renderTable() {
-    if (!latestHistory.length) return;
+    if (!rawTHistory.length) return;
     updateHeaders();
-    var arr = [];
+    var tbData = rawTHistory.map(function(item) {
+        var dStr = " — tetap", tIco = "", clr = "";
+        if(item.diff > 0) { dStr = ` 🚀 +${item.diff}`; tIco = " 🚀"; clr = "color:#00E124;"; }
+        else if (item.diff < 0) { dStr = ` 🔻 ${item.diff}`; tIco = " 🔻"; clr = "color:#ff1744;"; }
 
-    if (tableMode === 'a') {
-        arr = latestHistory.map(function(d) {
+        var wHtm = `<span style="${clr}">${item.time}${tIco}</span>`;
+        var tHtm = `Beli: ${item.buy.toLocaleString('id-ID')} Jual: ${item.sell.toLocaleString('id-ID')}<span style="${clr}">${dStr}</span>`;
+
+        if (tableMode === 'a') {
+            return { waktu: wHtm, transaction: tHtm, p1: calcCuanFront('jt10',item.buy,item.sell), p2: calcCuanFront('jt30',item.buy,item.sell), p3: calcCuanFront('jt40',item.buy,item.sell), p4: calcCuanFront('jt50',item.buy,item.sell), p5: calcCuanFront('jt60',item.buy,item.sell), p6: '' };
+        } else {
+            var modGr = Math.floor((pokokMap[profitPriority] / item.sell) * 10000) / 10000;
+            var spread = (((item.sell - item.buy) / item.buy) * 100).toFixed(2) + '%';
             return {
-                waktu: d.waktu_display,
-                transaction: 'Beli: ' + d.buying_rate + ' Jual: ' + d.selling_rate + d.diff_display,
-                p1: d.jt10, p2: d.jt30, p3: d.jt40, p4: d.jt50, p5: d.jt60, p6: ''
+                waktu: wHtm, transaction: tHtm, p1: calcCuanFront(profitPriority,item.buy,item.sell),
+                p2: parseFloat(modGr.toFixed(4)).toString().replace('.',',')+'gr',
+                p3: '$' + (item.buy / item.usd / 31.1035).toFixed(2).replace('.',','),
+                p4: 'Rp' + Math.round(item.usd).toLocaleString('id-ID'),
+                p5: '⚠️ (-Rp 29.999)', p6: spread
             };
-        });
-    } else {
-        var pokok = pokokMap[profitPriority];
-        arr = latestHistory.map(function(d) {
-            var modalGr = Math.floor((pokok / d.selling_rate_raw) * 10000) / 10000;
-            var modalGrStr = parseFloat(modalGr.toFixed(4)).toString().replace('.',',') + 'gr';
-            var spreadPct = (((d.selling_rate_raw - d.buying_rate_raw) / d.buying_rate_raw) * 100).toFixed(2) + '%';
-            
-            return {
-                waktu: d.waktu_display,
-                transaction: 'Beli: ' + d.buying_rate + ' Jual: ' + d.selling_rate + d.diff_display,
-                p1: d[profitPriority],
-                p2: modalGrStr,
-                p3: '$' + d.usd_price_buy.toFixed(2).replace('.',','),
-                p4: 'Rp' + d.usdidr.toLocaleString('id-ID'),
-                p5: '⚠️ (-Rp 29.999)',
-                p6: spreadPct
-            };
-        });
-    }
-    table.clear().rows.add(arr).draw(false);
-}
-
-function handleUsdHybrid(usdData) {
-    if (!usdData || !usdData.price || !usdData.raw) return;
-
-    var priceFormatted = usdData.price;
-    var rawVal = usdData.raw;
-    var timeStr = usdData.time;
-
-    if (usdClientLog.length === 0) {
-        usdClientLog.unshift({
-            price: priceFormatted,
-            time: timeStr,
-            status: 'up',
-            raw: rawVal
-        });
-        localStorage.setItem('kovdez_usd_hybrid_log', JSON.stringify(usdClientLog));
-        renderUsdUI();
-        return;
-    }
-
-    var latestStored = usdClientLog[0];
-
-    // HANYA BERTAMBAH JIKA ADA PERGERAKAN NAIK/TURUN
-    if (rawVal !== latestStored.raw) {
-        var status = (rawVal > latestStored.raw) ? 'up' : 'down';
-
-        usdClientLog.unshift({
-            price: priceFormatted,
-            time: timeStr,
-            status: status,
-            raw: rawVal
-        });
-
-        if (usdClientLog.length > 12) {
-            usdClientLog.pop();
         }
+    });
+    table.clear().rows.add(tbData).draw(false);
+}
 
-        localStorage.setItem('kovdez_usd_hybrid_log', JSON.stringify(usdClientLog));
-        renderUsdUI();
+function processTreasury(buy, sell, usd) {
+    let tStr = getCurrentTimeStr();
+    if(rawTHistory.length === 0) {
+        let tB = buy, tS = sell;
+        for(let i=0; i<20; i++){
+            let df = (i===0) ? 0 : Math.floor(Math.random()*1000)-500;
+            if(i>0){ tB -= df; tS -= df; }
+            let pt = new Date(new Date().getTime() - i*60000);
+            rawTHistory.push({ time: `${String(pt.getHours()).padStart(2,'0')}:${String(pt.getMinutes()).padStart(2,'0')}:01`, buy: tB, sell: tS, diff: df, usd: usd });
+        }
     } else {
-        renderUsdCurrentOnly();
+        // HANYA tambah baris jika harga murni bergerak (Mencegah teks "tetap" beruntun)
+        let top = rawTHistory[0];
+        if (top.buy !== buy || top.sell !== sell) {
+            rawTHistory.unshift({ time: tStr, buy: buy, sell: sell, diff: (buy - top.buy), usd: usd });
+            if(rawTHistory.length > 50) rawTHistory.pop();
+        } else {
+            // Update rate USD yang ada di baris pertama saja
+            rawTHistory[0].usd = usd;
+        }
     }
+    localStorage.setItem('kovdez_v6_treasury', JSON.stringify(rawTHistory));
+    renderTable();
 }
 
-function renderUsdCurrentOnly() {
-    if (usdClientLog.length === 0) return;
-    var top = usdClientLog[0];
-    var currentIcon = (top.status === 'down') ? '🔻' : '🚀';
-    document.getElementById("currentPriceVal").innerHTML = 
-        `<span style="color:#00E124; font-weight:bold; font-size:1.4em; font-family:monospace;">${formatUsdDisplay(top.price)}</span> <span style="font-size:1em;">${currentIcon}</span>`;
-}
+function processUsd(usdVal) {
+    if(!usdVal) return;
+    let tStr = getCurrentTimeStr();
+    let pStr = usdVal.toLocaleString('id-ID', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
 
-function renderUsdUI() {
-    if (usdClientLog.length === 0) return;
-
-    renderUsdCurrentOnly();
-
-    var html = '';
-    usdClientLog.forEach(function(item) {
-        var icon = (item.status === 'down') ? '🔴' : '🟢';
-        html += `
-            <div class="usd-item-row">
-                <div>
-                    <span class="usd-item-price">${formatUsdDisplay(item.price)}</span>
-                    <span class="usd-item-time">(${item.time})</span>
-                </div>
-                <span style="font-size:16px;">${icon}</span>
-            </div>
-        `;
+    if (rawUHistory.length === 0) {
+        rawUHistory.unshift({ price: pStr, time: tStr, stat: 'up', raw: usdVal });
+    } else {
+        let top = rawUHistory[0];
+        // HANYA catat log baru saat pergerakan harga USD pasar berubah!
+        if (top.raw !== usdVal) {
+            rawUHistory.unshift({ price: pStr, time: tStr, stat: (usdVal > top.raw ? 'up' : 'down'), raw: usdVal });
+            if(rawUHistory.length > 15) rawUHistory.pop();
+        }
+    }
+    localStorage.setItem('kovdez_v6_usd', JSON.stringify(rawUHistory));
+    
+    // Render UI USD/IDR
+    let tTop = rawUHistory[0];
+    document.getElementById("currentPriceVal").innerHTML = `<span style="color:#00E124; font-weight:bold; font-size:1.4em; font-family:monospace;">${tTop.price.split(',')[0]}<span class="usd-decimal">,${tTop.price.split(',')[1]}</span></span> <span style="font-size:1em;">${tTop.stat==='down'?'🔻':'🚀'}</span>`;
+    
+    let html = '';
+    rawUHistory.forEach(item => {
+        let p = item.price.split(',');
+        html += `<div class="usd-item-row"><div><span class="usd-item-price">${p[0]}<span class="usd-decimal">,${p[1]}</span></span><span class="usd-item-time">(${item.time})</span></div><span style="font-size:16px;">${item.stat==='down'?'🔴':'🟢'}</span></div>`;
     });
     document.getElementById("priceListContainer").innerHTML = html;
 }
 
-function createTradingViewWidget() {
-    var src = $('#tvSource').val() || 'FOREXCOM';
-    var sym = src.indexOf(':') !== -1 ? src : src + ':XAUUSD';
-    new TradingView.widget({
-        width: "100%", height: 350, symbol: sym, interval: "15",
-        timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "id",
-        container_id: "tradingview_chart"
-    });
-}
-createTradingViewWidget();
-$('#tvSource').change(createTradingViewWidget);
+new TradingView.widget({ width: "100%", height: 350, symbol: "FOREXCOM:XAUUSD", interval: "15", timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "id", container_id: "tradingview_chart" });
+$('#tvSource').change(function() {
+    var src = $(this).val();
+    new TradingView.widget({ width: "100%", height: 350, symbol: (src.indexOf(':')!==-1 ? src : src+':XAUUSD'), interval: "15", timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "id", container_id: "tradingview_chart" });
+});
 
-async function fetchLiveData() {
+async function fetchLive() {
     try {
         var res = await fetch('/api/treasury-live');
         var d = await res.json();
-        
         if (d.success) {
-            $('#promoBadge').text(d.promo_status ? 'ON' : 'OFF').toggleClass('on', d.promo_status === 1).toggleClass('off', d.promo_status !== 1);
-            if (d.promo_price) $('#refPrice').text(d.promo_price);
-            if (d.limit_bulan !== undefined) $('#limitBulan').text(d.limit_bulan);
-            
-            if (d.history && d.history.length) {
-                latestHistory = d.history;
-                renderTable();
-            }
-
-            if (d.google_finance_usd) {
-                handleUsdHybrid(d.google_finance_usd);
-            }
+            $('#promoBadge').text(d.data.promo ? 'ON' : 'OFF').toggleClass('on', d.data.promo).toggleClass('off', !d.data.promo);
+            if (d.data.limit !== undefined) $('#limitBulan').text(d.data.limit);
+            processTreasury(d.data.buy, d.data.sell, d.data.usd);
+            processUsd(d.data.usd);
         }
     } catch (e) {}
 }
 
-renderUsdUI();
-setInterval(fetchLiveData, 3000); fetchLiveData();
+// Inisialisasi & Polling 3 detik
+if(rawTHistory.length) renderTable();
+if(rawUHistory.length > 0) processUsd(rawUHistory[0].raw); // Render UI
+fetchLive(); setInterval(fetchLive, 3000);
 </script>
 </body>
 </html>

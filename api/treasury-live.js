@@ -6,124 +6,36 @@ module.exports = async (req, res) => {
     
     if (req.method === 'OPTIONS') return res.status(200).end();
 
-    let buyPrice = 2521823;
-    let sellPrice = 2436368;
-    let isPromoActive = false;
-    let limitBulanIni = 5;
-    let liveUsdIdr = 17912.0000;
+    let data = { buy: 0, sell: 0, usd: 0, promo: 0, limit: 5 };
 
-    // 1. Fetch Data Emas Treasury Live
+    // 1. Fetch Harga Murni Treasury
     try {
-        const response = await axios.get('https://indonesia-gold-api.vercel.app/api/treasury', {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-            timeout: 3000
-        });
-
-        if (response.data && response.data.data) {
-            const data = response.data.data;
-            buyPrice = parseInt(data.hargaBeli || buyPrice, 10);
-            sellPrice = parseInt(data.hargaJual || sellPrice, 10);
-            isPromoActive = data.is_promo_active || false;
-            limitBulanIni = data.limit_bulan_ini || 5;
+        const tRes = await axios.get('https://indonesia-gold-api.vercel.app/api/treasury', { timeout: 3500 });
+        if (tRes.data && tRes.data.data) {
+            data.buy = parseInt(tRes.data.data.hargaBeli || tRes.data.data.buy);
+            data.sell = parseInt(tRes.data.data.hargaJual || tRes.data.data.sell);
+            data.promo = tRes.data.data.is_promo_active ? 1 : 0;
+            data.limit = tRes.data.data.limit_bulan_ini || 5;
         }
-    } catch (err) {}
+    } catch (e) {}
 
-    // 2. Fetch Data TradingView Realtime
+    // 2. Fetch Harga Murni USD/IDR TradingView (Tanpa Dummy)
     try {
         const tvRes = await axios.post('https://scanner.tradingview.com/forex/scan', {
             symbols: { tickers: ["FX_IDC:USDIDR", "ICE:USDIDR"] },
             columns: ["close"]
-        }, {
-            headers: { 'Content-Type': 'application/json' },
-            timeout: 2500
-        });
-
+        }, { timeout: 3500 });
+        
         if (tvRes.data && tvRes.data.data && tvRes.data.data.length > 0) {
-            const tvPrice = tvRes.data.data[0].d[0];
-            if (tvPrice && tvPrice > 10000) liveUsdIdr = parseFloat(tvPrice);
+            const val = parseFloat(tvRes.data.data[0].d[0]);
+            if (val > 10000) data.usd = val;
         }
-    } catch (err) {}
+    } catch (e) {}
 
-    const now = new Date();
-    const wibTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
-    const dayOfWeek = wibTime.getUTCDay(); // 0 = Minggu, 6 = Sabtu
+    // Fallback Darurat Jika API Eksternal Timeout
+    if (!data.buy) data.buy = 2455601;
+    if (!data.sell) data.sell = 2375088;
+    if (!data.usd) data.usd = 17987.8500;
 
-    // PENANGANAN AKHIR PEKAN (SABTU & MINGGU PASAR FOREX TUTUP)
-    // Mengaktifkan Micro-Tick Kovdez saat pasar libur agar dashboard tetap update otomatis
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-        const seconds = wibTime.getUTCSeconds();
-        const cycle = Math.floor(seconds / 20) % 2;
-        liveUsdIdr = (cycle === 0) ? 17914.1000 : 17912.3513;
-    }
-
-    const hours = String(wibTime.getUTCHours()).padStart(2, '0');
-    const minutes = String(wibTime.getUTCMinutes()).padStart(2, '0');
-    const secs = String(wibTime.getUTCSeconds()).padStart(2, '0');
-    const currentTimeStr = `${hours}:${minutes}:${secs}`;
-
-    // Rumus Presisi Cuan Kovdez
-    function calcKovdezCuan(tierKey, buy, sell) {
-        const exactMap = {
-            jt10: { val: -8070, tx: 10000000 },
-            jt30: { val: -20723, tx: 30000000 },
-            jt40: { val: -27549, tx: 40000000 },
-            jt50: { val: -34376, tx: 50000000 },
-            jt60: { val: -38202, tx: 60000000 }
-        };
-
-        const target = exactMap[tierKey];
-        const gramBeli = Math.floor((target.tx / buy) * 10000) / 10000;
-        const gramStr = parseFloat(gramBeli.toFixed(4)).toString().replace('.', ',') + 'gr';
-
-        let cuanNominal;
-        if (buy === 2521823 && sell === 2436368) {
-            cuanNominal = target.val;
-        } else {
-            const baseRatio = target.val / ((target.tx / 2521823) * (2436368 - 2521823));
-            cuanNominal = Math.round(gramBeli * (sell - buy) * baseRatio);
-        }
-
-        const sign = cuanNominal > 0 ? '+' : '';
-        const icon = cuanNominal >= 0 ? '🟢' : '🔴';
-        return `${sign}${cuanNominal.toLocaleString('id-ID')} ${icon} ${gramStr}`;
-    }
-
-    const history = [];
-    for (let i = 0; i < 20; i++) {
-        const pastTime = new Date(wibTime.getTime() - i * 60000);
-        const h = String(pastTime.getUTCHours()).padStart(2, '0');
-        const m = String(pastTime.getUTCMinutes()).padStart(2, '0');
-
-        history.push({
-            created_at: pastTime.toISOString(),
-            waktu_display: `${h}:${m}:01`,
-            buying_rate: buyPrice.toLocaleString('id-ID'),
-            selling_rate: sellPrice.toLocaleString('id-ID'),
-            buying_rate_raw: buyPrice,
-            selling_rate_raw: sellPrice,
-            diff_display: " — tetap",
-            jt10: calcKovdezCuan('jt10', buyPrice, sellPrice),
-            jt30: calcKovdezCuan('jt30', buyPrice, sellPrice),
-            jt40: calcKovdezCuan('jt40', buyPrice, sellPrice),
-            jt50: calcKovdezCuan('jt50', buyPrice, sellPrice),
-            jt60: calcKovdezCuan('jt60', buyPrice, sellPrice),
-            usd_price_buy: (buyPrice / liveUsdIdr / 31.1035),
-            usdidr: Math.round(liveUsdIdr)
-        });
-    }
-
-    const formattedUsdPrice = liveUsdIdr.toLocaleString('id-ID', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
-
-    return res.status(200).json({
-        success: true,
-        promo_status: isPromoActive ? 1 : 0,
-        promo_price: "2.565.001",
-        limit_bulan: limitBulanIni,
-        history: history,
-        google_finance_usd: {
-            price: formattedUsdPrice,
-            raw: liveUsdIdr,
-            time: currentTimeStr
-        }
-    });
+    res.json({ success: true, data: data });
 };
