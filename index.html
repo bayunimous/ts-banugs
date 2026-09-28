@@ -122,11 +122,10 @@ th.transaksi,td.transaksi{text-align:left;min-width:240px}
 var profitPriority = 'jt50', tableMode = 'detail';
 var pokokMap = { jt10: 9669000, jt30: 29004000, jt40: 38672000, jt50: 48340000, jt60: 58005000 };
 
-// Bersihkan cache usang
-localStorage.removeItem('kovdez_v6_treasury');
-localStorage.removeItem('kovdez_v6_usd');
-var rawTHistory = JSON.parse(localStorage.getItem('kovdez_v7_treasury') || '[]');
-var rawUHistory = JSON.parse(localStorage.getItem('kovdez_v7_usd') || '[]');
+localStorage.removeItem('kovdez_v7_treasury');
+localStorage.removeItem('kovdez_v7_usd');
+var rawTHistory = JSON.parse(localStorage.getItem('kovdez_v8_treasury') || '[]');
+var rawUHistory = JSON.parse(localStorage.getItem('kovdez_v8_usd') || '[]');
 
 function updateJam() {
     var now = new Date();
@@ -138,7 +137,7 @@ setInterval(updateJam, 1000); updateJam();
 var table = $('#tabel').DataTable({
     pageLength: 4, lengthMenu: [4, 8, 18, 88, 361], order: [],
     columns: [{data:"waktu",className:"waktu"}, {data:"transaction",className:"transaksi"}, {data:"p1"}, {data:"p2"}, {data:"p3"}, {data:"p4"}, {data:"p5"}, {data:"p6"}],
-    language: { emptyTable: "Mendapatkan data pasar...", lengthMenu: "⚙️ _MENU_", search: "🔍", paginate: { previous: "Kembali", next: "Lanjut" } },
+    language: { emptyTable: "Menarik data langsung dari server Treasury & Google...", lengthMenu: "⚙️ _MENU_", search: "🔍", paginate: { previous: "Kembali", next: "Lanjut" } },
     initComplete: function() {
         var filterDiv = $('.dataTables_filter');
         var btnsHtml = '<div class="profit-order-btns" id="profitOrderBtns"><button class="profit-btn" id="modeABtn">A</button>';
@@ -206,7 +205,6 @@ function renderTable() {
     table.clear().rows.add(tbData).draw(false);
 }
 
-// LOGIKA OTOMATIS: TRIGGER PERGANTIAN MENIT
 function processTreasury(buy, sell, usd) {
     let now = new Date();
     let currentMin = now.getMinutes();
@@ -221,26 +219,24 @@ function processTreasury(buy, sell, usd) {
             let pt = new Date(now.getTime() - i*60000);
             rawTHistory.push({ time: `${String(pt.getHours()).padStart(2,'0')}:${String(pt.getMinutes()).padStart(2,'0')}:01`, buy: tB, sell: tS, diff: df, usd: usd });
         }
-        localStorage.setItem('kovdez_v7_treasury', JSON.stringify(rawTHistory));
+        localStorage.setItem('kovdez_v8_treasury', JSON.stringify(rawTHistory));
         renderTable();
     } else {
         let top = rawTHistory[0];
         let topMin = parseInt(top.time.split(':')[1], 10);
 
-        // ATURAN KOVDEZ: JIKA MENIT BERGANTI, PAKSA TAMBAH BARIS BARU (tetap/naik/turun)
         if (currentMin !== topMin && currentSec >= 1) {
             let diff = buy - top.buy;
             rawTHistory.unshift({ time: timeStr, buy: buy, sell: sell, diff: diff, usd: usd });
             if(rawTHistory.length > 50) rawTHistory.pop();
-            localStorage.setItem('kovdez_v7_treasury', JSON.stringify(rawTHistory));
+            localStorage.setItem('kovdez_v8_treasury', JSON.stringify(rawTHistory));
             renderTable();
         } 
-        // Jika harga berubah drastis di pertengahan menit
         else if (buy !== top.buy || sell !== top.sell) {
             top.buy = buy; top.sell = sell;
             top.diff = (rawTHistory.length > 1) ? (buy - rawTHistory[1].buy) : 0;
             top.usd = usd;
-            localStorage.setItem('kovdez_v7_treasury', JSON.stringify(rawTHistory));
+            localStorage.setItem('kovdez_v8_treasury', JSON.stringify(rawTHistory));
             renderTable();
         }
     }
@@ -256,13 +252,12 @@ function processUsd(usdVal) {
         rawUHistory.unshift({ price: pStr, time: tStr, stat: 'up', raw: usdVal });
     } else {
         let top = rawUHistory[0];
-        // Tambah log HANYA jika harga valas pasar benar-benar bergerak
         if (top.raw !== usdVal) {
             rawUHistory.unshift({ price: pStr, time: tStr, stat: (usdVal > top.raw ? 'up' : 'down'), raw: usdVal });
             if(rawUHistory.length > 15) rawUHistory.pop();
         }
     }
-    localStorage.setItem('kovdez_v7_usd', JSON.stringify(rawUHistory));
+    localStorage.setItem('kovdez_v8_usd', JSON.stringify(rawUHistory));
     
     let tTop = rawUHistory[0];
     document.getElementById("currentPriceVal").innerHTML = `<span style="color:#00E124; font-weight:bold; font-size:1.4em; font-family:monospace;">${tTop.price.split(',')[0]}<span class="usd-decimal">,${tTop.price.split(',')[1]}</span></span> <span style="font-size:1em;">${tTop.stat==='down'?'🔻':'🚀'}</span>`;
@@ -279,7 +274,8 @@ new TradingView.widget({ width: "100%", height: 350, symbol: "FOREXCOM:XAUUSD", 
 
 async function fetchLive() {
     try {
-        var res = await fetch('/api/treasury-live');
+        // 🔥 TAMBAHKAN TIMESTAMPS DI SINI UNTUK MEMBONGKAR CACHE BROWSER/VERCEL 🔥
+        var res = await fetch(`/api/treasury-live?nocache=${new Date().getTime()}`, { cache: "no-store" });
         var d = await res.json();
         if (d.success) {
             $('#promoBadge').text(d.data.promo ? 'ON' : 'OFF').toggleClass('on', d.data.promo).toggleClass('off', !d.data.promo);
@@ -293,8 +289,8 @@ async function fetchLive() {
 if(rawTHistory.length) renderTable();
 if(rawUHistory.length > 0) processUsd(rawUHistory[0].raw);
 
-// Interval dipercepat menjadi 2 detik agar tidak melewatkan pergantian menit (01 detik)
-fetchLive(); setInterval(fetchLive, 2000);
+// Tarik data secara agresif setiap 1.5 detik agar pergerakan tidak tertinggal
+fetchLive(); setInterval(fetchLive, 1500);
 </script>
 </body>
 </html>
